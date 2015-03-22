@@ -8,9 +8,8 @@ namespace PADIMapNoReduce
 {
    public interface IClient
     {
-       //test edited
        void receiveTaskRequest();
-       void receiveCompletedTask(File file);
+       void receiveCompletedTask(StreamReader resultStream);
        void receiveWorkCompleteStatus();
     }
 }

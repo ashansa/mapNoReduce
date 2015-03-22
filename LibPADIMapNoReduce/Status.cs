@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PADIMapNoReduce
 {
-    class Status
+    public class Status
     {
     }
 }
