@@ -86,9 +86,7 @@ namespace PADIMapNoReduce
                     {
                         Monitor.Wait(taskResultList);
                         continue;
-                    }
-
-                   
+                    }                  
                  taskResult = taskResultList[0];
                  taskResultList.RemoveAt(0);
                 }

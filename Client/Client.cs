@@ -40,6 +40,7 @@ namespace PADIMapNoReduce {
 
         public WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata)
         {
+            /*we need to set the input file part in workerMetadata.chunk*/
             string mapperName = "Mapper";
             String inputCode = "E:\\Semester2-Chathuri\\Middleware\\project\\MapperTransfer\\MapperTransfer\\LibMapper\\bin\\Debug\\LibMapper.dll";
             byte[] code = File.ReadAllBytes(inputCode);
@@ -52,6 +53,7 @@ namespace PADIMapNoReduce {
 
         public Boolean receiveCompletedTask(TaskResult taskResult)
         {
+            /*we need to merge all keyValuepairs in in memory and then write to file*/
             return true;
         }
         public void receiveCompletedTask(StreamReader resultStream, string splitName)
