@@ -48,6 +48,7 @@
     <Compile Include="Interfaces.cs" />
     <Compile Include="IWorker.cs" />
     <Compile Include="Status.cs" />
+    <Compile Include="TaskResult.cs" />
     <Compile Include="WorkerTaskMetadata.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

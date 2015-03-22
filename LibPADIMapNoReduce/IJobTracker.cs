@@ -6,9 +6,9 @@ using System.Text;
 namespace PADIMapNoReduce
 {
   public  interface IJobTracker
-    {
+  {
       void receiveJobRequest(ClientMetadata clientMetadata);
-      //void receiveStatus(Status status);
+      void receiveStatus(String status);
       void receiveHeartbeat();
 
     }

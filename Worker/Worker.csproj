@@ -43,13 +43,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\LibPADIMapNoReduce\LibPADIMapNoReduce.csproj">
       <Project>{2d129022-0922-40c3-9987-17789e3a225f}</Project>
       <Name>LibPADIMapNoReduce</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Worker.cs" />
+    <Compile Include="worker\MapTask.cs" />
+    <Compile Include="worker\WorkerCommunicator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Debug\" />
+    <Folder Include="bin\Release\" />
+    <Folder Include="obj\Debug\TempPE\" />
+    <Folder Include="tracker\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

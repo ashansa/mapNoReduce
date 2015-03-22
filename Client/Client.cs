@@ -9,20 +9,22 @@ using System.Text.RegularExpressions;
 
 namespace PADIMapNoReduce {
 
-    public class Client : IClient {
+    public class Client :MarshalByRefObject, IClient {
 
         private string inputFilePath;
         private string outputFilePah;
 
         static void Main(string[] args) {
-            string mapperName = args[0];
-            TcpChannel channel = new TcpChannel();
+            TcpChannel channel = new TcpChannel(10000);
             ChannelServices.RegisterChannel(channel, true);
-            IWorker worker = (IWorker)Activator.GetObject(
-                typeof(IWorker),
-                "tcp://localhost:10000/Worker");
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(Client),
+                "Client",
+                WellKnownObjectMode.Singleton);
           
-            new Client().splitFile(@"C:\Users\ashansa\Documents\tmp\inputt.txt", 4);
+           new Client().splitFile(@"C:\Users\ashansa\Documents\tmp\inputt.txt", 4);
+
+            Console.ReadLine();
            
         }
 
@@ -32,13 +34,24 @@ namespace PADIMapNoReduce {
             this.outputFilePah = outputDir;
         }
 
-        public void receiveTaskRequest()
+        /**/
+        public WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata)
         {
-           // byte[] code = File.ReadAllBytes(args[1]);
-            //Console.WriteLine(worker.executeTask(code, mapperName));
+            /*retrieve split metadata and set workermetadata for part file*/
+            string mapperName = "Mapper";
+            String inputCode = "E:\\Semester2-Chathuri\\Middleware\\project\\MapperTransfer\\MapperTransfer\\LibMapper\\bin\\Debug\\LibMapper.dll";
+            byte[] code = File.ReadAllBytes(inputCode);
+            WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata();
+            workerMetadata.MapperClassName = mapperName;
+            workerMetadata.Code = code;
+            return workerMetadata;
         }
-        public void receiveCompletedTask(StreamReader resultStream)
+
+
+        public Boolean receiveCompletedTask(TaskResult taskResult)
         {
+            return true;
+           
         }
 
         public void receiveWorkCompleteStatus()

@@ -5,7 +5,11 @@ using System.Text;
 
 namespace PADIMapNoReduce
 {
-    public class Status
+    [Serializable]
+   public class Status
     {
+       double cpuUsage;
+       double percentageCompleted;
+       double timeTakenTillNow;
     }
 }
