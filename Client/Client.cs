@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace PADIMapNoReduce {
 
-    public class Client : IClient {
+    public class Client :MarshalByRefObject, IClient {
 
         private string inputFilePath;
         private string outputDir;
@@ -18,15 +18,14 @@ namespace PADIMapNoReduce {
         static void Main(string[] args) {
 
             new Client().combineResults();
-           /* string mapperName = args[0];
-            TcpChannel channel = new TcpChannel();
+            TcpChannel channel = new TcpChannel(10000);
             ChannelServices.RegisterChannel(channel, true);
-            IWorker worker = (IWorker)Activator.GetObject(
-                typeof(IWorker),
-                "tcp://localhost:10000/Worker");
-          
-            new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", 4, @"C:\Users\ashansa\Documents\tmp\out", null);
-          */
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(Client),
+                "Client",
+                WellKnownObjectMode.Singleton);
+          //  new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", 4, @"C:\Users\ashansa\Documents\tmp\out", null);
+            Console.ReadLine();
         }
 
         public void submitTask(string inputFile, int splits, string outputDir, string mapperFunctionFile)
@@ -39,10 +38,21 @@ namespace PADIMapNoReduce {
             receiveCompletedTask(null, null);
         }
 
-        public void receiveTaskRequest()
+        public WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata)
         {
-           // byte[] code = File.ReadAllBytes(args[1]);
-            //Console.WriteLine(worker.executeTask(code, mapperName));
+            string mapperName = "Mapper";
+            String inputCode = "E:\\Semester2-Chathuri\\Middleware\\project\\MapperTransfer\\MapperTransfer\\LibMapper\\bin\\Debug\\LibMapper.dll";
+            byte[] code = File.ReadAllBytes(inputCode);
+            WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata();
+            workerMetadata.MapperClassName = mapperName;
+            workerMetadata.Code = code;
+            return workerMetadata;
+        }
+
+
+        public Boolean receiveCompletedTask(TaskResult taskResult)
+        {
+            return true;
         }
         public void receiveCompletedTask(StreamReader resultStream, string splitName)
         {
