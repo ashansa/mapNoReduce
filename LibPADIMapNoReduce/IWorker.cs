@@ -8,8 +8,7 @@ namespace PADIMapNoReduce
 {
    public interface IWorker
     {
-      void receiveTask();
-      void executeTask(byte[] code, File file);
+      void receiveTask(FileSplitMetadata splitMetadata);//recive split details from jobTracker
       void checkHeartbeat();
     }
 }

@@ -8,9 +8,8 @@ namespace PADIMapNoReduce
 {
    public interface IClient
     {
-       //test edited
-       void receiveTaskRequest();
-       void receiveCompletedTask(File file);
+       WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata);//fill this object and return to worker
+       void receiveCompletedTask(String file);
        void receiveWorkCompleteStatus();
     }
 }
