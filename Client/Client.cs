@@ -12,24 +12,31 @@ namespace PADIMapNoReduce {
     public class Client : IClient {
 
         private string inputFilePath;
-        private string outputFilePah;
+        private string outputDir;
+        private const string tempDir = "tmp"; 
 
         static void Main(string[] args) {
-            string mapperName = args[0];
+
+            new Client().combineResults();
+           /* string mapperName = args[0];
             TcpChannel channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, true);
             IWorker worker = (IWorker)Activator.GetObject(
                 typeof(IWorker),
                 "tcp://localhost:10000/Worker");
           
-            new Client().splitFile(@"C:\Users\ashansa\Documents\tmp\inputt.txt", 4);
-           
+            new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", 4, @"C:\Users\ashansa\Documents\tmp\out", null);
+          */
         }
 
         public void submitTask(string inputFile, int splits, string outputDir, string mapperFunctionFile)
         {
             this.inputFilePath = inputFile;
-            this.outputFilePah = outputDir;
+            this.outputDir = outputDir;
+            splitFile(inputFilePath, splits);
+
+            //temp calling receive task here
+            receiveCompletedTask(null, null);
         }
 
         public void receiveTaskRequest()
@@ -37,13 +44,41 @@ namespace PADIMapNoReduce {
            // byte[] code = File.ReadAllBytes(args[1]);
             //Console.WriteLine(worker.executeTask(code, mapperName));
         }
-        public void receiveCompletedTask(StreamReader resultStream)
+        public void receiveCompletedTask(StreamReader resultStream, string splitName)
         {
+            /////////////// temp place to result files
+            string[] files = Directory.GetFiles(@"C:\Users\ashansa\Documents\tmp\");
+            int count = 0;
+            ////////////
+            
+            foreach (string file in files)
+            {
+                ///////////////// temp creating stream and split name 
+                var sourceFile = new StreamReader(file);
+                resultStream = sourceFile;
+                count++;
+                splitName = "file"+count+".txt";
+                /////////////////
+
+                string line;
+                Directory.CreateDirectory(outputDir + Path.DirectorySeparatorChar + tempDir);
+                var destinationFile = new StreamWriter(outputDir + Path.DirectorySeparatorChar + 
+                    tempDir + Path.DirectorySeparatorChar + splitName);
+                while ((line = resultStream.ReadLine()) != null)
+                {
+                    destinationFile.WriteLine(line);
+                    destinationFile.Flush();
+                }    
+            }
+
+            /////////////////// temp calling task completed method from here
+            receiveWorkCompleteStatus();
         }
 
         public void receiveWorkCompleteStatus()
         {
             //TODO combine the result files
+            combineResults();
         }
 
         private void splitFile(string sourceFilePath, int splits)
@@ -97,6 +132,21 @@ namespace PADIMapNoReduce {
                     destinationFile.Dispose();
                 }
             }
+        }
+
+        private void combineResults()
+        {
+            //////////////// temp setting output dir to test with others commented
+            outputDir = @"C:\Users\ashansa\Documents\tmp\out";
+            //combine results and clear output dir
+            string[] resultFileParts = Directory.GetFiles(outputDir + Path.DirectorySeparatorChar + tempDir);
+
+            Array.Sort(resultFileParts);
+            foreach (string s in resultFileParts)
+            {
+                Console.WriteLine(s);
+            }
+            Console.ReadLine();
         }
     }
 }
