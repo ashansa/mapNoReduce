@@ -45,7 +45,7 @@
     <Compile Include="FileSplitMetadata.cs" />
     <Compile Include="IClient.cs" />
     <Compile Include="IJobTracker.cs" />
-    <Compile Include="Interfaces.cs" />
+    <Compile Include="IMapper.cs" />
     <Compile Include="IWorker.cs" />
     <Compile Include="Status.cs" />
     <Compile Include="TaskResult.cs" />
