@@ -9,27 +9,27 @@ namespace PADIMapNoReduce
     public class FileSplitMetadata//to be sent to Worker by job tracker
     {
         int splitId;
+        long startPosition;
+        long endPosition;
+        String clientUrl;//workers need this to connect to client
 
         public int SplitId
         {
             get { return splitId; }
             set { splitId = value; }
         }
-        long startPosition;
-
+        
         public long StartPosition
         {
             get { return startPosition; }
             set { startPosition = value; }
         }
-        long endPosition;
-
+       
         public long EndPosition
         {
             get { return endPosition; }
             set { endPosition = value; }
         }
-        String clientUrl;//workers need this to connect to client
 
         public String ClientUrl
         {

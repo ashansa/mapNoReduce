@@ -9,14 +9,14 @@ namespace PADIMapNoReduce
     public class TaskResult
     {
         IList<KeyValuePair<string, string>> result;
+        int splitId;
 
         public IList<KeyValuePair<string, string>> Result
         {
             get { return result; }
             set { result = value; }
         }
-        int splitId;
-
+       
         public int SplitId
         {
             get { return splitId; }

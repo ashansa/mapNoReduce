@@ -11,21 +11,21 @@ namespace PADIMapNoReduce
    public class WorkerTaskMetadata
     {
         byte[] code;
+        String mapperClassName;
+        String chunk;
 
         public byte[] Code
         {
             get { return code; }
             set { code = value; }
         }
-        String mapperClassName;
-
+        
         public String MapperClassName
         {
             get { return mapperClassName; }
             set { mapperClassName = value; }
         }
-        String chunk;
-
+       
         public String Chunk
         {
             get { return chunk; }
