@@ -8,16 +8,16 @@ using System.Threading;
 
 namespace Server.worker
 {
-   public class WorkerTask
+    public class WorkerTask
     {
-       
+
         List<FileSplitMetadata> splitMetadataList = new List<FileSplitMetadata>();
         List<TaskResult> taskResultList = new List<TaskResult>();
         Thread splitProcessor;
         Thread resultSender;
         MapTask mapTask = new MapTask();
         Boolean isJobTracker;
-     
+
         public MapTask getMapTask()//this is the currently runing map task
         {
             return mapTask;
@@ -25,14 +25,14 @@ namespace Server.worker
 
         public void startWorkerThreads()
         {
-          splitProcessor = new Thread(new ThreadStart(processSplits));
-           splitProcessor.Start();
+            splitProcessor = new Thread(new ThreadStart(processSplits));
+            splitProcessor.Start();
 
             resultSender = new Thread(new ThreadStart(sendResults));
             resultSender.Start();
         }
 
-        private  void sendResults()
+        private void sendResults()
         {
             WorkerCommunicator workerTask = new WorkerCommunicator();
             TaskResult taskResult;
@@ -52,7 +52,7 @@ namespace Server.worker
             }
         }
 
-        private  void processSplits()
+        private void processSplits()
         {
             FileSplitMetadata fileSplitMetadata = null;
             while (true)
@@ -71,14 +71,14 @@ namespace Server.worker
                     }
                 }
                 WorkerCommunicator workerTask = new WorkerCommunicator();
-               WorkerTaskMetadata workerTaskMetadata = workerTask.getTaskFromClient(fileSplitMetadata);
+                WorkerTaskMetadata workerTaskMetadata = workerTask.getTaskFromClient(fileSplitMetadata);
 
-               TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata);
+                TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata);
                 addTaskToTaskList(taskResult);
             }
         }
 
-        private  void addTaskToTaskList(TaskResult taskResult)
+        private void addTaskToTaskList(TaskResult taskResult)
         {
             lock (taskResultList)
             {
@@ -88,7 +88,7 @@ namespace Server.worker
         }
 
 
-        public  void addSplitToSplitList(FileSplitMetadata splitMetadata)
+        public void addSplitToSplitList(FileSplitMetadata splitMetadata)
         {
             lock (splitMetadataList)
             {
