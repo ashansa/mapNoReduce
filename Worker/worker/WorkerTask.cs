@@ -15,6 +15,7 @@ namespace Server.worker
         List<TaskResult> taskResultList = new List<TaskResult>();
         Thread splitProcessor;
         Thread resultSender;
+        Thread statusUpdateNotificationThread;
         MapTask mapTask = new MapTask();
 
         public MapTask getMapTask()//this is the currently runing map task
@@ -29,6 +30,9 @@ namespace Server.worker
 
             resultSender = new Thread(new ThreadStart(sendResults));
             resultSender.Start();
+
+            statusUpdateNotificationThread = new Thread(new ThreadStart(sendStatusUpdates));
+            statusUpdateNotificationThread.Start();
         }
 
         private void sendResults()
@@ -83,7 +87,6 @@ namespace Server.worker
                 lock (mapTask.Status)
                 {
                     Monitor.Wait(mapTask.Status);
-
                 }
                 WorkerCommunicator communicator = new WorkerCommunicator();
                 communicator.sendStatusUpdatesToTracker(mapTask.Status);
@@ -96,6 +99,8 @@ namespace Server.worker
             lock (taskResultList)
             {
                 taskResultList.Add(taskResult);
+
+                if(taskResultList.Count==1)
                 Monitor.Pulse(taskResultList);
             }
         }
@@ -106,6 +111,8 @@ namespace Server.worker
             lock (splitMetadataList)
             {
                 splitMetadataList.Add(splitMetadata);
+
+                if(splitMetadataList.Count==1)
                 Monitor.Pulse(splitMetadataList);
             }
         }

@@ -38,8 +38,8 @@ namespace PADIMapNoReduce
             Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata();
             splitMetadata.SplitId = 1;
-            splitMetadata.StartPosition = 10;
-            splitMetadata.EndPosition = 20;
+            splitMetadata.StartPosition =4;
+            splitMetadata.EndPosition = 8;
 
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
@@ -53,6 +53,8 @@ namespace PADIMapNoReduce
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
 
+
+            //TODO:either make job tracker or task tracker tasks depending on status
             worker.startWorkerTask();//start threads for Worker task
             //TODO: start tasks for jobtracker
             Console.ReadLine();

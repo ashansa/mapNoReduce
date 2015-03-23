@@ -74,21 +74,31 @@ namespace Server.worker
             String chunk = workerTaskMetadata.Chunk;
             long lineNumber =splitMetaData.StartPosition;
             long linesProcessed = 0;
-
+            string line;
             using (StringReader reader = new System.IO.StringReader(chunk))
             {
-                string line = reader.ReadLine();
-                if (!isMapSuspended)
+                while (true)
                 {
-                    runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, lineNumber++, "this is test");
-                    linesProcessed++;
-                    setTaskStatus(splitMetaData,linesProcessed);
-                }
-                else
-                {
-                    //clear the results and wait for next map
-                    result = new List<KeyValuePair<string, string>>();
-                    isMapSuspended = false;
+                    line = reader.ReadLine();
+                    if (line != null)
+                    {
+                        if (!isMapSuspended)
+                        {
+                            runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, lineNumber++, "this is test");
+                            linesProcessed++;
+                            setTaskStatus(splitMetaData, linesProcessed);
+                        }
+                        else
+                        {
+                            //clear the results and wait for next map
+                            result = new List<KeyValuePair<string, string>>();
+                            isMapSuspended = false;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
                 Console.WriteLine("total sequences" + lineNumber);
                 return createTaskResultBoject(splitMetaData.SplitId);
@@ -98,15 +108,18 @@ namespace Server.worker
         private void setTaskStatus(FileSplitMetadata splitMetaData,long linesProcessed)
         {
             long totalLines = splitMetaData.EndPosition - splitMetaData.StartPosition;
-            double percentage = linesProcessed / (double)totalLines;
+            double percentage = 100*(linesProcessed / (double)totalLines);
             int oldfactor = (int)status.PercentageCompleted/10;
             int newfactor = (int)percentage / 10;
 
             status.PercentageCompleted = percentage;
 
-            if (newfactor > oldfactor)//send for each 10% percentage
-            {   
+            lock (status)
+            {
+                if (newfactor > oldfactor)//send for each 10% percentage
+                {
                     Monitor.Pulse(status);
+                }
             }
 
         }
