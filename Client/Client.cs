@@ -55,8 +55,16 @@ namespace PADIMapNoReduce {
 
         public Boolean receiveCompletedTask(TaskResult taskResult)
         {
-            /*we need to merge all keyValuepairs in in memory and then write to file*/
-            return true;
+            /*we need to get the bytestream and then write to file*/
+            try
+            {
+                //File.WriteAllBytes(string path, byte[] bytes)
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;//what we do if fails
+            }
         }
         public void receiveCompletedTask(StreamReader resultStream, string splitName)
         {

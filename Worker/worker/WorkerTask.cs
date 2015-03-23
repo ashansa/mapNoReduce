@@ -117,6 +117,7 @@ namespace Server.worker
             }
         }
 
+        /*suspend the current map or suspend the map which has not yet started but in split list*/
         public bool suspendOrRemoveMapTask(int splitId)
         {
             if (mapTask.SplitId == splitId)

@@ -8,15 +8,15 @@ namespace PADIMapNoReduce
     [Serializable]
     public class TaskResult
     {
-        IList<KeyValuePair<string, string>> result;
-        int splitId;
+        byte[] result;
 
-        public IList<KeyValuePair<string, string>> Result
+        public byte[] Result
         {
             get { return result; }
             set { result = value; }
         }
-       
+        int splitId;
+      
         public int SplitId
         {
             get { return splitId; }

@@ -55,12 +55,12 @@ namespace PADIMapNoReduce
 
 
             //TODO:either make job tracker or task tracker tasks depending on status
-            worker.startWorkerTask();//start threads for Worker task
+            worker.startWorkerTasks();//start threads for Worker task
             //TODO: start tasks for jobtracker
             Console.ReadLine();
         }
 
-        public void startWorkerTask()
+        public void startWorkerTasks()
         {
             workerTask.startWorkerThreads();
         }

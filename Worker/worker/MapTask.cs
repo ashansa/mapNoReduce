@@ -127,9 +127,22 @@ namespace Server.worker
         private TaskResult createTaskResultBoject(int splitId)
         {
             TaskResult taskResult = new TaskResult();
-            taskResult.Result = result;
+            taskResult.Result = getByteStreamOfResults();
             taskResult.SplitId = splitId;
             return taskResult;
+        }
+
+        private byte[] getByteStreamOfResults()
+        {
+            StringBuilder output = new StringBuilder();
+            foreach (KeyValuePair<string,string> pair in result)
+            {
+                output.Append(pair.Key).Append(":").Append(pair.Value);
+                output.Append("\r\n");
+            }
+               byte[] bytes = new byte[output.ToString().Length * sizeof(char)];
+               System.Buffer.BlockCopy(output.ToString().ToCharArray(), 0, bytes, 0, bytes.Length);
+              return bytes;
         }
     }
 }
