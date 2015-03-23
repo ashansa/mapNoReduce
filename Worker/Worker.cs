@@ -12,12 +12,12 @@ namespace PADIMapNoReduce
     /// <summary>
     /// Program class is a container for application entry point Main
     /// </summary>
-    class Worker : MarshalByRefObject, IWorker,IJobTracker
+    class Worker : MarshalByRefObject, IWorker, IJobTracker
     {
         WorkerTask workerTask = new WorkerTask();
         public Worker()
         {
-         
+
         }
 
         /// <summary>
@@ -32,18 +32,13 @@ namespace PADIMapNoReduce
             Worker worker = new Worker();
             RemotingServices.Marshal(worker, "Worker",
               typeof(Worker));
-            /*ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(Worker),
-                "Worker",
-                WellKnownObjectMode.Singleton);*/
 
             Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata();
             splitMetadata.SplitId = 1;
             splitMetadata.StartPosition = 10;
             splitMetadata.EndPosition = 20;
-          
+
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
@@ -61,20 +56,21 @@ namespace PADIMapNoReduce
             Console.ReadLine();
         }
 
-        public void startWorkerTask(){
+        public void startWorkerTask()
+        {
             workerTask.startWorkerThreads();
         }
 
         #region Worker
-      
-    
+
+
 
         #region IWorker implementation
-    
+
         public void receiveTask(FileSplitMetadata splitMetadata)//job tracker will invoke this
         {
             workerTask.addSplitToSplitList(splitMetadata);
-           
+
             //we don't block the job tracker as we execute task seperately     
         }
 
@@ -94,13 +90,13 @@ namespace PADIMapNoReduce
         #region JobTracker
         public void receiveJobRequest(ClientMetadata clientMetadata)
         {
-          //now he is a Job Tracker. Implement all job tracker functions upon this
-        //Start channel with other workers as Job tracker
+            //now he is a Job Tracker. Implement all job tracker functions upon this
+            //Start channel with other workers as Job tracker
         }
 
         public void receiveHeartbeat()
         {
-   
+
         }
 
         public void receiveStatus(String status)

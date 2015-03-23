@@ -12,8 +12,6 @@ namespace Server.worker
     {
         public WorkerTaskMetadata getTaskFromClient(FileSplitMetadata splitMetadata)
         {
-           // TcpChannel channel = new TcpChannel();
-            //ChannelServices.RegisterChannel(channel, true);
             IClient client = (IClient)Activator.GetObject(
                 typeof(IClient),
                 "tcp://localhost:10000/Client");
