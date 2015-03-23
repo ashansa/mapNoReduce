@@ -44,9 +44,11 @@ namespace PADIMapNoReduce {
             string mapperName = "Mapper";
             String inputCode = "E:\\Semester2-Chathuri\\Middleware\\project\\MapperTransfer\\MapperTransfer\\LibMapper\\bin\\Debug\\LibMapper.dll";
             byte[] code = File.ReadAllBytes(inputCode);
+            String strToProcess = "this is \r\n my nice string \r\n to process \r\n and it is too small";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata();
             workerMetadata.MapperClassName = mapperName;
             workerMetadata.Code = code;
+            workerMetadata.Chunk = strToProcess;
             return workerMetadata;
         }
 

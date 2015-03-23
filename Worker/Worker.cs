@@ -14,24 +14,12 @@ namespace PADIMapNoReduce
     /// </summary>
     class Worker : MarshalByRefObject, IWorker,IJobTracker
     {
-        Boolean isJobTracker;
-        Boolean isMapSuspended;
-        List<FileSplitMetadata> splitMetadataList = new List<FileSplitMetadata>();
-        List<TaskResult> taskResultList = new List<TaskResult>();
-        Thread splitProcessor;
-        Thread resultSender;
-        MapTask mapTask = new MapTask();
-
+        WorkerTask workerTask = new WorkerTask();
         public Worker()
         {
          
         }
 
-        public Boolean IsJobTracker
-        {
-            get { return isJobTracker; }
-            set { isJobTracker = value; }
-        }
         /// <summary>
         /// Application entry point Main
         /// </summary>
@@ -41,17 +29,21 @@ namespace PADIMapNoReduce
             /*Workers are listening*/
             TcpChannel channel = new TcpChannel(10001);
             ChannelServices.RegisterChannel(channel, true);
+            Worker worker = new Worker();
+            RemotingServices.Marshal(worker, "Worker",
+              typeof(Worker));
+            /*ChannelServices.RegisterChannel(channel, true);
             RemotingConfiguration.RegisterWellKnownServiceType(
                 typeof(Worker),
                 "Worker",
-                WellKnownObjectMode.Singleton);
+                WellKnownObjectMode.Singleton);*/
 
-
+            Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata();
             splitMetadata.SplitId = 1;
             splitMetadata.StartPosition = 10;
             splitMetadata.EndPosition = 20;
-            Worker worker = new Worker();
+          
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
@@ -64,97 +56,37 @@ namespace PADIMapNoReduce
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
 
-            worker.splitProcessor = new Thread(new ThreadStart(worker.processSplits));
-            worker.splitProcessor.Start();
-
-            worker.resultSender = new Thread(new ThreadStart(worker.sendResults));
-            worker.resultSender.Start();
-
+            worker.startWorkerTask();//start threads for Worker task
+            //TODO: start tasks for jobtracker
             Console.ReadLine();
         }
 
+        public void startWorkerTask(){
+            workerTask.startWorkerThreads();
+        }
+
         #region Worker
-        private void sendResults()
-        {
-            WorkerCommunicator workerTask = new WorkerCommunicator();
-             TaskResult taskResult;
-            while (true)
-            {
-                lock (taskResultList)
-                {
-                    if (taskResultList.Count == 0)
-                    {
-                        Monitor.Wait(taskResultList);
-                        continue;
-                    }                  
-                 taskResult = taskResultList[0];
-                 taskResultList.RemoveAt(0);
-                }
-                workerTask.sendResultsToClient(taskResult);
-            }
-        }
+      
     
-        private void processSplits()
-        {
-            FileSplitMetadata fileSplitMetadata = null;
-            while (true)
-            {
-                lock (splitMetadataList)
-                {
-                    if (splitMetadataList.Count > 0)
-                    {
-                        fileSplitMetadata = splitMetadataList[0];
-                        splitMetadataList.RemoveAt(0);
-                    }
-                    else
-                    {
-                        Monitor.Wait(splitMetadataList);
-                        continue;
-                    }
-                }
-                WorkerCommunicator workerTask = new WorkerCommunicator();
-                WorkerTaskMetadata workerTaskMetadata= workerTask.getTaskFromClient(fileSplitMetadata);
-
-                mapTask.processMapTask(workerTaskMetadata,fileSplitMetadata);
-               
-                
-                TaskResult taskResult=new TaskResult();
-                taskResult.Result=mapTask.result;
-                taskResult.SplitId=fileSplitMetadata.SplitId;
-                //once done for each line
-
-                addTaskToTaskList(taskResult);
-            }
-        }
-
-        private void addTaskToTaskList(TaskResult taskResult)
-        {
-            lock (taskResultList)
-            {
-                taskResultList.Add(taskResult);
-                Monitor.Pulse(taskResultList);
-            }
-        }
 
         #region IWorker implementation
-        /* will be called by JobTracker*/
-        /*upon call from JT, get split and file from client and start executing it*/
-        public void receiveTask(FileSplitMetadata splitMetadata)
+    
+        public void receiveTask(FileSplitMetadata splitMetadata)//job tracker will invoke this
         {
-            lock (splitMetadataList)
-            {
-                splitMetadataList.Add(splitMetadata);
-                Monitor.Pulse(splitMetadataList);
-            }
+            workerTask.addSplitToSplitList(splitMetadata);
+           
             //we don't block the job tracker as we execute task seperately     
         }
 
 
-        public void checkHeartbeat()
+        public void checkHeartbeat()//job tracker will invoke this
         {
 
         }
- 
+        public bool suspendTask(int splitId)//job tracker will invoke this after certain slowness
+        {
+            return false;
+        }
         #endregion
         #endregion
 

@@ -11,6 +11,7 @@ namespace Server.worker
    public class MapTask
     {
         private Status status = new Status();
+        Boolean isMapSuspended;
 
         public Status Status
         {
@@ -56,14 +57,32 @@ namespace Server.worker
        internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata,FileSplitMetadata splitMetaData)
        {
            String chunk=workerTaskMetadata.Chunk;
-           long lineNumber=splitMetaData.StartPosition;
-           
-          // using (StringReader reader = new System.IO.StringReader(chunk)) {
-          // string line = reader.ReadLine();
-               runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName,lineNumber++,"this is test");
-          // }
+           long lineNumber=9;
 
-               return null;
+           using (StringReader reader = new System.IO.StringReader(chunk))
+           {
+               string line = reader.ReadLine();
+               if (!isMapSuspended)
+               {
+                   runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, lineNumber++, "this is test");
+               }
+               else
+               {
+                //clear the results and wait for next map
+                   result=new List<KeyValuePair<string, string>>();
+                   isMapSuspended = false;
+               }
+               Console.WriteLine("total sequences" + lineNumber);
+               return createTaskResultBoject(splitMetaData.SplitId);
+           }
+       }
+
+       private TaskResult createTaskResultBoject(int splitId)
+       {
+           TaskResult taskResult = new TaskResult();
+           taskResult.Result = result;
+           taskResult.SplitId = splitId;
+           return taskResult;
        }
     }
 }

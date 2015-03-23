@@ -55,6 +55,7 @@
     <Compile Include="Worker.cs" />
     <Compile Include="worker\MapTask.cs" />
     <Compile Include="worker\WorkerCommunicator.cs" />
+    <Compile Include="worker\WorkerTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\Debug\" />
