@@ -47,6 +47,7 @@
     <Compile Include="IJobTracker.cs" />
     <Compile Include="IMapper.cs" />
     <Compile Include="IWorker.cs" />
+    <Compile Include="IWorkerTracker.cs" />
     <Compile Include="Status.cs" />
     <Compile Include="TaskResult.cs" />
     <Compile Include="WorkerTaskMetadata.cs" />

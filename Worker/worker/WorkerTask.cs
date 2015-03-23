@@ -16,7 +16,6 @@ namespace Server.worker
         Thread splitProcessor;
         Thread resultSender;
         MapTask mapTask = new MapTask();
-        Boolean isJobTracker;
 
         public MapTask getMapTask()//this is the currently runing map task
         {
@@ -72,11 +71,25 @@ namespace Server.worker
                 }
                 WorkerCommunicator workerTask = new WorkerCommunicator();
                 WorkerTaskMetadata workerTaskMetadata = workerTask.getTaskFromClient(fileSplitMetadata);
-
+                mapTask.SplitId = fileSplitMetadata.SplitId;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata);
                 addTaskToTaskList(taskResult);
             }
         }
+        private void sendStatusUpdates()
+        {
+            while (true)
+            {
+                lock (mapTask.Status)
+                {
+                    Monitor.Wait(mapTask.Status);
+
+                }
+                WorkerCommunicator communicator = new WorkerCommunicator();
+                communicator.sendStatusUpdatesToTracker(mapTask.Status);
+            }
+        }
+
 
         private void addTaskToTaskList(TaskResult taskResult)
         {
@@ -97,8 +110,32 @@ namespace Server.worker
             }
         }
 
-        public void suspendOrRemoveMapTask(int splitId)
+        public bool suspendOrRemoveMapTask(int splitId)
         {
+            if (mapTask.SplitId == splitId)
+            {
+                mapTask.IsMapSuspended = true;
+                return true;
+            }
+            else
+            {
+                lock (splitMetadataList)
+                {
+                    if (splitMetadataList.Count > 0)
+                    {
+                        for (int i = 0; i < splitMetadataList.Count; i++)
+                        {
+                            if (splitMetadataList[i].SplitId == splitId)
+                            {
+                                splitMetadataList.RemoveAt(i);
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            return false;
         }
     }
 }

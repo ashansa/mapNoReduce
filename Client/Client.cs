@@ -17,7 +17,7 @@ namespace PADIMapNoReduce {
 
         static void Main(string[] args) {
 
-            new Client().combineResults();
+          //  new Client().combineResults();
             TcpChannel channel = new TcpChannel(10000);
             ChannelServices.RegisterChannel(channel, true);
             RemotingConfiguration.RegisterWellKnownServiceType(

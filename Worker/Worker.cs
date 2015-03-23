@@ -12,8 +12,10 @@ namespace PADIMapNoReduce
     /// <summary>
     /// Program class is a container for application entry point Main
     /// </summary>
-    class Worker : MarshalByRefObject, IWorker, IJobTracker
+    class Worker : MarshalByRefObject, IWorkerTracker
     {
+        public static string JOBTRACKER_URL;
+        public static string CLIENT_URL;
         WorkerTask workerTask = new WorkerTask();
         public Worker()
         {
@@ -62,13 +64,12 @@ namespace PADIMapNoReduce
         }
 
         #region Worker
-
-
-
         #region IWorker implementation
 
         public void receiveTask(FileSplitMetadata splitMetadata)//job tracker will invoke this
         {
+            CLIENT_URL = splitMetadata.ClientUrl;
+            JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
             workerTask.addSplitToSplitList(splitMetadata);
 
             //we don't block the job tracker as we execute task seperately     
@@ -81,7 +82,7 @@ namespace PADIMapNoReduce
         }
         public bool suspendTask(int splitId)//job tracker will invoke this after certain slowness
         {
-            return false;
+            return workerTask.suspendOrRemoveMapTask(splitId);
         }
         #endregion
         #endregion
@@ -99,7 +100,7 @@ namespace PADIMapNoReduce
 
         }
 
-        public void receiveStatus(String status)
+        public void receiveStatus(Status status)
         {
         }
 

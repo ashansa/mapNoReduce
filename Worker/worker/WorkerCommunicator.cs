@@ -28,5 +28,13 @@ namespace Server.worker
             Boolean status = client.receiveCompletedTask(taskResult);
             Console.WriteLine("receive status at client is" + status);
         }
+
+        public void sendStatusUpdatesToTracker(Status status)
+        {
+            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(
+                      typeof(IWorkerTracker),
+                      Worker.JOBTRACKER_URL);
+            tracker.receiveStatus(status);
+        }
     }
 }
