@@ -9,20 +9,20 @@ namespace PADIMapNoReduce
    public class ClientMetadata //to be sent to the jobtracker
     {
         long totalLineCount;
+        long splitCount;
+        String clientUrl;
 
         public long TotalLineCount
         {
             get { return totalLineCount; }
             set { totalLineCount = value; }
         }
-        long splitCount;
-
+       
         public long SplitCount
         {
             get { return splitCount; }
             set { splitCount = value; }
         }
-        String clientUrl;
 
         public String ClientUrl
         {
