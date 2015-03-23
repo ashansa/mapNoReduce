@@ -36,5 +36,14 @@ namespace PADIMapNoReduce
             get { return clientUrl; }
             set { clientUrl = value; }
         }
-    }
+
+        string jobTrackerUrl;//we need this so that workers can connect back to send status updates
+
+        public string JobTrackerUrl
+        {
+            get { return jobTrackerUrl; }
+            set { jobTrackerUrl = value; }
+        }
+
+           }
 }

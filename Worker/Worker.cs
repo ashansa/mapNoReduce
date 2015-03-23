@@ -12,8 +12,10 @@ namespace PADIMapNoReduce
     /// <summary>
     /// Program class is a container for application entry point Main
     /// </summary>
-    class Worker : MarshalByRefObject, IWorker, IJobTracker
+    class Worker : MarshalByRefObject, IWorkerTracker
     {
+        public static string JOBTRACKER_URL;
+        public static string CLIENT_URL;
         WorkerTask workerTask = new WorkerTask();
         public Worker()
         {
@@ -36,8 +38,8 @@ namespace PADIMapNoReduce
             Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata();
             splitMetadata.SplitId = 1;
-            splitMetadata.StartPosition = 10;
-            splitMetadata.EndPosition = 20;
+            splitMetadata.StartPosition =4;
+            splitMetadata.EndPosition = 8;
 
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
@@ -51,6 +53,8 @@ namespace PADIMapNoReduce
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
 
+
+            //TODO:either make job tracker or task tracker tasks depending on status
             worker.startWorkerTask();//start threads for Worker task
             //TODO: start tasks for jobtracker
             Console.ReadLine();
@@ -62,13 +66,12 @@ namespace PADIMapNoReduce
         }
 
         #region Worker
-
-
-
         #region IWorker implementation
 
         public void receiveTask(FileSplitMetadata splitMetadata)//job tracker will invoke this
         {
+            CLIENT_URL = splitMetadata.ClientUrl;
+            JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
             workerTask.addSplitToSplitList(splitMetadata);
 
             //we don't block the job tracker as we execute task seperately     
@@ -81,7 +84,7 @@ namespace PADIMapNoReduce
         }
         public bool suspendTask(int splitId)//job tracker will invoke this after certain slowness
         {
-            return false;
+            return workerTask.suspendOrRemoveMapTask(splitId);
         }
         #endregion
         #endregion
@@ -94,12 +97,7 @@ namespace PADIMapNoReduce
             //Start channel with other workers as Job tracker
         }
 
-        public void receiveHeartbeat()
-        {
-
-        }
-
-        public void receiveStatus(String status)
+        public void receiveStatus(Status status)
         {
         }
 

@@ -8,8 +8,7 @@ namespace PADIMapNoReduce
   public  interface IJobTracker
   {
       void receiveJobRequest(ClientMetadata clientMetadata);
-      void receiveStatus(String status);
-      void receiveHeartbeat();
+      void receiveStatus(Status status);
 
     }
 }

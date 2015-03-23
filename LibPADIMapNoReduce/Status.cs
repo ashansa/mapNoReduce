@@ -10,6 +10,13 @@ namespace PADIMapNoReduce
     {
        double cpuUsage;
        double percentageCompleted;
+
+       public double PercentageCompleted
+       {
+           get { return percentageCompleted; }
+           set { percentageCompleted = value; }
+       }
        double timeTakenTillNow;
+       int splitId;
     }
 }

@@ -15,8 +15,8 @@ namespace Server.worker
         List<TaskResult> taskResultList = new List<TaskResult>();
         Thread splitProcessor;
         Thread resultSender;
+        Thread statusUpdateNotificationThread;
         MapTask mapTask = new MapTask();
-        Boolean isJobTracker;
 
         public MapTask getMapTask()//this is the currently runing map task
         {
@@ -30,6 +30,9 @@ namespace Server.worker
 
             resultSender = new Thread(new ThreadStart(sendResults));
             resultSender.Start();
+
+            statusUpdateNotificationThread = new Thread(new ThreadStart(sendStatusUpdates));
+            statusUpdateNotificationThread.Start();
         }
 
         private void sendResults()
@@ -72,17 +75,32 @@ namespace Server.worker
                 }
                 WorkerCommunicator workerTask = new WorkerCommunicator();
                 WorkerTaskMetadata workerTaskMetadata = workerTask.getTaskFromClient(fileSplitMetadata);
-
+                mapTask.SplitId = fileSplitMetadata.SplitId;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata);
                 addTaskToTaskList(taskResult);
             }
         }
+        private void sendStatusUpdates()
+        {
+            while (true)
+            {
+                lock (mapTask.Status)
+                {
+                    Monitor.Wait(mapTask.Status);
+                }
+                WorkerCommunicator communicator = new WorkerCommunicator();
+                communicator.sendStatusUpdatesToTracker(mapTask.Status);
+            }
+        }
+
 
         private void addTaskToTaskList(TaskResult taskResult)
         {
             lock (taskResultList)
             {
                 taskResultList.Add(taskResult);
+
+                if(taskResultList.Count==1)
                 Monitor.Pulse(taskResultList);
             }
         }
@@ -93,12 +111,38 @@ namespace Server.worker
             lock (splitMetadataList)
             {
                 splitMetadataList.Add(splitMetadata);
+
+                if(splitMetadataList.Count==1)
                 Monitor.Pulse(splitMetadataList);
             }
         }
 
-        public void suspendOrRemoveMapTask(int splitId)
+        public bool suspendOrRemoveMapTask(int splitId)
         {
+            if (mapTask.SplitId == splitId)
+            {
+                mapTask.IsMapSuspended = true;
+                return true;
+            }
+            else
+            {
+                lock (splitMetadataList)
+                {
+                    if (splitMetadataList.Count > 0)
+                    {
+                        for (int i = 0; i < splitMetadataList.Count; i++)
+                        {
+                            if (splitMetadataList[i].SplitId == splitId)
+                            {
+                                splitMetadataList.RemoveAt(i);
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            return false;
         }
     }
 }
