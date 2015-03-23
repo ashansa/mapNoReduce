@@ -9,7 +9,6 @@ namespace PADIMapNoReduce
   {
       void receiveJobRequest(ClientMetadata clientMetadata);
       void receiveStatus(Status status);
-      void receiveHeartbeat();
 
     }
 }

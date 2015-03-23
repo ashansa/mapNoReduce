@@ -95,11 +95,6 @@ namespace PADIMapNoReduce
             //Start channel with other workers as Job tracker
         }
 
-        public void receiveHeartbeat()
-        {
-
-        }
-
         public void receiveStatus(Status status)
         {
         }
