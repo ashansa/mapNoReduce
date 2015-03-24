@@ -14,6 +14,13 @@ namespace PADIMapNoReduce
         String mapperClassName;
         String chunk;
 
+        public WorkerTaskMetadata(byte[] code,String mapperClassName,String chunk)
+        {
+            this.code = code;
+            this.mapperClassName = mapperClassName;
+            this.chunk = chunk;
+        }
+
         public byte[] Code
         {
             get { return code; }

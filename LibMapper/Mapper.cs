@@ -1,12 +1,20 @@
 ﻿using PADIMapNoReduce;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 namespace LibMapper {
     public class Mapper : IMapper {
-        public IList<KeyValuePair<string, string>> Map(string fileLine) {
-            IList<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
-            result.Add(new KeyValuePair<string,string>("testKey1", fileLine));
-            result.Add(new KeyValuePair<string, string>("testKey2", "anotherValue"));
+
+        public IList Map(string fileLine)
+        {
+          
+            Key<string> k = new Key<string>(fileLine);
+            Value<int> v = new Value<int>(100);
+            IList result = new List<KeyValuePair<Key<string>, Value<int>>>();
+            KeyValuePair<Key<string>, Value<int>> pair = new KeyValuePair<Key<string>, Value<int>>(k, v);
+
+            result.Add(pair);
             return result;
         }
     }

@@ -36,7 +36,7 @@ namespace PADIMapNoReduce
               typeof(Worker));
 
             Console.WriteLine("starting tasks");
-            FileSplitMetadata splitMetadata = new FileSplitMetadata();
+            FileSplitMetadata splitMetadata = new FileSplitMetadata(1, 4, 8, "clientURL");
             splitMetadata.SplitId = 1;
             splitMetadata.StartPosition =4;
             splitMetadata.EndPosition = 8;

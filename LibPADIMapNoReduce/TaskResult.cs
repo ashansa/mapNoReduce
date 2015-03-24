@@ -9,14 +9,20 @@ namespace PADIMapNoReduce
     public class TaskResult
     {
         byte[] result;
+        int splitId;
+
+        public TaskResult(byte[] result, int splitId)
+        {
+            this.result=result;
+            this.splitId = splitId;
+        }
 
         public byte[] Result
         {
             get { return result; }
             set { result = value; }
         }
-        int splitId;
-      
+        
         public int SplitId
         {
             get { return splitId; }

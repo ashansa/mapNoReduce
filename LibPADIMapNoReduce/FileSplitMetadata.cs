@@ -13,6 +13,13 @@ namespace PADIMapNoReduce
         long endPosition;
         String clientUrl;//workers need this to connect to client
 
+      public  FileSplitMetadata(int splitId, long startPosition, long endPosition, String clientUrl)
+        {
+            this.splitId = splitId;
+            this.startPosition = startPosition;
+            this.endPosition = endPosition;
+            this.clientUrl = clientUrl;
+        }
         public int SplitId
         {
             get { return splitId; }

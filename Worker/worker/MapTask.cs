@@ -1,5 +1,6 @@
 ﻿using PADIMapNoReduce;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace Server.worker
             get { return status; }
             set { status = value; }
         }
-        public IList<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+        public IList result;
 
         public bool runMapperForLine(byte[] code, string className, long lineNumber, String line)
         {
@@ -49,30 +50,40 @@ namespace Server.worker
 
                         // Dynamically Invoke the method
                         object[] args = new object[] { line };
-                        object resultObject = type.InvokeMember("Map",
+                        IList resultObject = (IList)type.InvokeMember("Map",
                           BindingFlags.Default | BindingFlags.InvokeMethod,
                                null,
                                ClassObj,
                                args);
-                        result.Concat((IList<KeyValuePair<string, string>>)resultObject);
-                        // result= (IList<KeyValuePair<string, string>>)resultObject;
-                        Console.WriteLine("Map call result was: ");
-                        foreach (KeyValuePair<string, string> p in result)
+
+                        if (result == null)
                         {
-                            Console.WriteLine("key: " + p.Key + ", value: " + p.Value);
+                            result = resultObject;
+                        }
+                        else
+                        {
+                            for (int i = 0; i < resultObject.Count; i++)
+                            {
+                                result.Add(resultObject[i]);
+                            }
+                        }
+                        Console.WriteLine("Map call result was: ");
+                        foreach (KeyValuePair<Key<string>, Value<int>> p in result)
+                        {
+                            Console.WriteLine("key: " + p.Key.Keydata + ", value: " + p.Value.Valuedata);
                         }
                         return true;
                     }
                 }
             }
             throw (new System.Exception("could not invoke method"));
-            return true;
+            return false;
         }
 
         internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata, FileSplitMetadata splitMetaData)
         {
             String chunk = workerTaskMetadata.Chunk;
-            long lineNumber =splitMetaData.StartPosition;
+            long lineNumber = splitMetaData.StartPosition;
             long linesProcessed = 0;
             string line;
             using (StringReader reader = new System.IO.StringReader(chunk))
@@ -84,7 +95,8 @@ namespace Server.worker
                     {
                         if (!isMapSuspended)
                         {
-                            runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, lineNumber++, "this is test");
+                            runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, lineNumber++, line);
+
                             linesProcessed++;
                             setTaskStatus(splitMetaData, linesProcessed);
                         }
@@ -105,11 +117,11 @@ namespace Server.worker
             }
         }
 
-        private void setTaskStatus(FileSplitMetadata splitMetaData,long linesProcessed)
+        private void setTaskStatus(FileSplitMetadata splitMetaData, long linesProcessed)
         {
             long totalLines = splitMetaData.EndPosition - splitMetaData.StartPosition;
-            double percentage = 100*(linesProcessed / (double)totalLines);
-            int oldfactor = (int)status.PercentageCompleted/10;
+            double percentage = 100 * (linesProcessed / (double)totalLines);
+            int oldfactor = (int)status.PercentageCompleted / 10;
             int newfactor = (int)percentage / 10;
 
             status.PercentageCompleted = percentage;
@@ -126,23 +138,21 @@ namespace Server.worker
 
         private TaskResult createTaskResultBoject(int splitId)
         {
-            TaskResult taskResult = new TaskResult();
-            taskResult.Result = getByteStreamOfResults();
-            taskResult.SplitId = splitId;
+            TaskResult taskResult = new TaskResult(getByteStreamOfResults(), splitId);
             return taskResult;
         }
 
         private byte[] getByteStreamOfResults()
         {
             StringBuilder output = new StringBuilder();
-            foreach (KeyValuePair<string,string> pair in result)
+            foreach (KeyValuePair<Key<string>, Value<int>> pair in result)
             {
-                output.Append(pair.Key).Append(":").Append(pair.Value);
+                output.Append(pair.Key.Keydata).Append(":").Append(pair.Value.Valuedata);
                 output.Append("\r\n");
             }
-               byte[] bytes = new byte[output.ToString().Length * sizeof(char)];
-               System.Buffer.BlockCopy(output.ToString().ToCharArray(), 0, bytes, 0, bytes.Length);
-              return bytes;
+            byte[] bytes = new byte[output.ToString().Length * sizeof(char)];
+            System.Buffer.BlockCopy(output.ToString().ToCharArray(), 0, bytes, 0, bytes.Length);
+            return bytes;
         }
     }
 }

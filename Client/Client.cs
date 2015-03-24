@@ -42,13 +42,10 @@ namespace PADIMapNoReduce {
         {
             /*we need to set the input file part in workerMetadata.chunk*/
             string mapperName = "Mapper";
-            String inputCode = "E:\\Semester2-Chathuri\\Middleware\\project\\MapperTransfer\\MapperTransfer\\LibMapper\\bin\\Debug\\LibMapper.dll";
+            String inputCode = "E:\\GIT\\PADI\\mapNoReduce\\LibMapper\\bin\\Debug\\LibMapper.dll";
             byte[] code = File.ReadAllBytes(inputCode);
             String strToProcess = "this is \r\n my nice string \r\n to process \r\n and it is too small";
-            WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata();
-            workerMetadata.MapperClassName = mapperName;
-            workerMetadata.Code = code;
-            workerMetadata.Chunk = strToProcess;
+            WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, strToProcess);
             return workerMetadata;
         }
 
@@ -58,7 +55,7 @@ namespace PADIMapNoReduce {
             /*we need to get the bytestream and then write to file*/
             try
             {
-                //File.WriteAllBytes(string path, byte[] bytes)
+                File.WriteAllBytes("E:\\input\\chathuri-"+taskResult.SplitId,taskResult.Result);
                 return true;
             }
             catch (Exception ex)

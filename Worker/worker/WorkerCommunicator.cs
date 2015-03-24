@@ -33,10 +33,10 @@ namespace Server.worker
         {
             Console.WriteLine("sending status updates "+status.PercentageCompleted);
             
-            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(
+        /*    IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(
                       typeof(IWorkerTracker),
                       Worker.JOBTRACKER_URL);
-            tracker.receiveStatus(status);
+            tracker.receiveStatus(status);*/
         }
     }
 }

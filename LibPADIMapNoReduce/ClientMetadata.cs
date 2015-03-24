@@ -12,6 +12,12 @@ namespace PADIMapNoReduce
         long splitCount;
         String clientUrl;
 
+        public ClientMetadata(long totalLineCount, long splitCount, String clientUrl)
+        {
+            this.totalLineCount = totalLineCount;
+            this.splitCount = splitCount;
+            this.clientUrl = clientUrl;
+        }
         public long TotalLineCount
         {
             get { return totalLineCount; }
