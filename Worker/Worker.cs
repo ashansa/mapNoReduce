@@ -38,7 +38,7 @@ namespace PADIMapNoReduce
             Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata(1, 4, 8, "clientURL");
             splitMetadata.SplitId = 1;
-            splitMetadata.StartPosition =4;
+            splitMetadata.StartPosition = 4;
             splitMetadata.EndPosition = 8;
 
             worker.receiveTask(splitMetadata);
@@ -57,12 +57,18 @@ namespace PADIMapNoReduce
             //TODO:either make job tracker or task tracker tasks depending on status
             worker.startWorkerTasks();//start threads for Worker task
             //TODO: start tasks for jobtracker
+
             Console.ReadLine();
         }
 
         public void startWorkerTasks()
         {
             workerTask.startWorkerThreads();
+        }
+
+        public void stopWorkerTasks()
+        {
+            workerTask.stopWorkerThreads();
         }
 
         #region Worker
@@ -95,12 +101,26 @@ namespace PADIMapNoReduce
         {
             //now he is a Job Tracker. Implement all job tracker functions upon this
             //Start channel with other workers as Job tracker
+
+
+            //stop runing worker(WorkerTask) threads
+            workerTask.stopWorkerThreads();
+
+            //start jobtracker threads
         }
 
         public void receiveStatus(Status status)
         {
         }
 
+        #endregion
+
+        #region specific
+        public override object InitializeLifetimeService()
+        {
+            //return base.InitializeLifetimeService();
+            return null;
+        }
         #endregion
     }
 }

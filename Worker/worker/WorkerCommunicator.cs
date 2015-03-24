@@ -31,12 +31,12 @@ namespace Server.worker
 
         public void sendStatusUpdatesToTracker(Status status)
         {
-            Console.WriteLine("sending status updates "+status.PercentageCompleted);
-            
-        /*    IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(
-                      typeof(IWorkerTracker),
-                      Worker.JOBTRACKER_URL);
-            tracker.receiveStatus(status);*/
+            Console.WriteLine("sending status updates " + status.PercentageCompleted);
+
+            /*    IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(
+                          typeof(IWorkerTracker),
+                          Worker.JOBTRACKER_URL);
+                tracker.receiveStatus(status);*/
         }
     }
 }

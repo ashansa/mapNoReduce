@@ -20,7 +20,7 @@ namespace Server.worker
             get { return splitId; }
             set { splitId = value; }
         }
-        Boolean isMapSuspended;
+        Boolean isMapSuspended = false;
 
         public Boolean IsMapSuspended
         {
@@ -33,7 +33,7 @@ namespace Server.worker
             get { return status; }
             set { status = value; }
         }
-        public IList result;
+        List<KeyValuePair<string, string>> result;
 
         public bool runMapperForLine(byte[] code, string className, long lineNumber, String line)
         {
@@ -51,27 +51,12 @@ namespace Server.worker
                         // Dynamically Invoke the method
                         object[] args = new object[] { line };
                         IList resultObject = (IList)type.InvokeMember("Map",
-                          BindingFlags.Default | BindingFlags.InvokeMethod,
-                               null,
-                               ClassObj,
-                               args);
+                         BindingFlags.Default | BindingFlags.InvokeMethod,
+                              null,
+                              ClassObj,
+                              args);
+                        result.AddRange((IList<KeyValuePair<string, string>>)resultObject);
 
-                        if (result == null)
-                        {
-                            result = resultObject;
-                        }
-                        else
-                        {
-                            for (int i = 0; i < resultObject.Count; i++)
-                            {
-                                result.Add(resultObject[i]);
-                            }
-                        }
-                        Console.WriteLine("Map call result was: ");
-                        foreach (KeyValuePair<Key<string>, Value<int>> p in result)
-                        {
-                            Console.WriteLine("key: " + p.Key.Keydata + ", value: " + p.Value.Valuedata);
-                        }
                         return true;
                     }
                 }
@@ -86,6 +71,7 @@ namespace Server.worker
             long lineNumber = splitMetaData.StartPosition;
             long linesProcessed = 0;
             string line;
+            result = new List<KeyValuePair<string, string>>();
             using (StringReader reader = new System.IO.StringReader(chunk))
             {
                 while (true)
@@ -145,9 +131,9 @@ namespace Server.worker
         private byte[] getByteStreamOfResults()
         {
             StringBuilder output = new StringBuilder();
-            foreach (KeyValuePair<Key<string>, Value<int>> pair in result)
+            foreach (KeyValuePair<string, string> pair in result)
             {
-                output.Append(pair.Key.Keydata).Append(":").Append(pair.Value.Valuedata);
+                output.Append(pair.Key).Append(":").Append(pair.Value);
                 output.Append("\r\n");
             }
             byte[] bytes = new byte[output.ToString().Length * sizeof(char)];

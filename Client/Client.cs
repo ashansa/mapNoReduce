@@ -55,7 +55,7 @@ namespace PADIMapNoReduce {
             /*we need to get the bytestream and then write to file*/
             try
             {
-                File.WriteAllBytes("E:\\input\\chathuri-"+taskResult.SplitId,taskResult.Result);
+                File.WriteAllBytes("E:\\input\\chathuri-"+taskResult.SplitId+".txt",taskResult.Result);
                 return true;
             }
             catch (Exception ex)
@@ -167,5 +167,14 @@ namespace PADIMapNoReduce {
             }
             Console.ReadLine();
         }
+
+        #region specific
+        //to avoid expiring objects within 20 minutes
+        public override object InitializeLifetimeService()
+        {
+            //return base.InitializeLifetimeService();
+            return null;
+        }
+        #endregion
     }
 }

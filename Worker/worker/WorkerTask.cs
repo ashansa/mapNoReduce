@@ -25,14 +25,33 @@ namespace Server.worker
 
         public void startWorkerThreads()
         {
-            splitProcessor = new Thread(new ThreadStart(processSplits));
-            splitProcessor.Start();
+            try
+            {
+                splitProcessor = new Thread(new ThreadStart(processSplits));
+                splitProcessor.Start();
 
-            resultSender = new Thread(new ThreadStart(sendResults));
-            resultSender.Start();
+                resultSender = new Thread(new ThreadStart(sendResults));
+                resultSender.Start();
 
-            statusUpdateNotificationThread = new Thread(new ThreadStart(sendStatusUpdates));
-            statusUpdateNotificationThread.Start();
+                statusUpdateNotificationThread = new Thread(new ThreadStart(sendStatusUpdates));
+                statusUpdateNotificationThread.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+            }
+        }
+
+        public void stopWorkerThreads()
+        {
+            splitProcessor.Abort();
+            splitProcessor = null;
+
+            resultSender.Abort();
+            resultSender = null;
+
+            statusUpdateNotificationThread.Abort();
+            statusUpdateNotificationThread = null;
         }
 
         private void sendResults()
@@ -100,8 +119,8 @@ namespace Server.worker
             {
                 taskResultList.Add(taskResult);
 
-                if(taskResultList.Count==1)
-                Monitor.Pulse(taskResultList);
+                if (taskResultList.Count == 1)
+                    Monitor.Pulse(taskResultList);
             }
         }
 
@@ -112,8 +131,8 @@ namespace Server.worker
             {
                 splitMetadataList.Add(splitMetadata);
 
-                if(splitMetadataList.Count==1)
-                Monitor.Pulse(splitMetadataList);
+                if (splitMetadataList.Count == 1)
+                    Monitor.Pulse(splitMetadataList);
             }
         }
 
