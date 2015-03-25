@@ -5,6 +5,7 @@ using System;
 using System.Net.Sockets;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 
 namespace PADIMapNoReduce {
@@ -16,18 +17,24 @@ namespace PADIMapNoReduce {
 
         static void Main(string[] args) {
 
-          //  new Client().combineResults();
-            TcpChannel channel = new TcpChannel(10000);
-            ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType( typeof(Client),
-                "Client",WellKnownObjectMode.Singleton);
-            
             //BELOW LINE TEMP USING FOR TESTING
-            //new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt",5, @"C:\Users\ashansa\Documents\tmp\out", null);
+           // new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", @"C:\Users\ashansa\Documents\tmp\out",5, null);
             ////Console.ReadLine();
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new ClientApp());
         }
 
-        public void submitTask(string inputFile, int splits, string outputDir, string mapperFunctionFile)
+        public Client()
+        {
+            TcpChannel channel = new TcpChannel(10000);
+            ChannelServices.RegisterChannel(channel, true);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(Client),
+                "Client", WellKnownObjectMode.Singleton);
+        }
+
+        public void submitTask(string inputFile, string outputDir, int splits, string mapperFunctionFile)
         {
             this.inputFilePath = inputFile;
             this.outputDir = outputDir;
