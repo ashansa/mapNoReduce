@@ -9,11 +9,11 @@ namespace PADIMapNoReduce
     public class FileSplitMetadata//to be sent to Worker by job tracker
     {
         int splitId;
-        long startPosition;
-        long endPosition;
+        int startPosition;
+        int endPosition;
         String clientUrl;//workers need this to connect to client
 
-      public  FileSplitMetadata(int splitId, long startPosition, long endPosition, String clientUrl)
+      public  FileSplitMetadata(int splitId, int startPosition, int endPosition, String clientUrl)
         {
             this.splitId = splitId;
             this.startPosition = startPosition;
@@ -26,13 +26,13 @@ namespace PADIMapNoReduce
             set { splitId = value; }
         }
         
-        public long StartPosition
+        public int StartPosition
         {
             get { return startPosition; }
             set { startPosition = value; }
         }
        
-        public long EndPosition
+        public int EndPosition
         {
             get { return endPosition; }
             set { endPosition = value; }
@@ -52,5 +52,5 @@ namespace PADIMapNoReduce
             set { jobTrackerUrl = value; }
         }
 
-           }
+    }
 }

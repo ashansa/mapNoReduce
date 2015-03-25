@@ -13,18 +13,15 @@ namespace PADIMapNoReduce {
 
         private string inputFilePath;
         private string outputDir;
-        private const string tempDir = "tmp"; 
 
         static void Main(string[] args) {
 
           //  new Client().combineResults();
             TcpChannel channel = new TcpChannel(10000);
             ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(
-                typeof(Client),
-                "Client",
-                WellKnownObjectMode.Singleton);
-          //  new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", 4, @"C:\Users\ashansa\Documents\tmp\out", null);
+            RemotingConfiguration.RegisterWellKnownServiceType( typeof(Client),
+                "Client",WellKnownObjectMode.Singleton);
+            new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", 4, @"C:\Users\ashansa\Documents\tmp\out", null);
             Console.ReadLine();
         }
 
@@ -32,20 +29,44 @@ namespace PADIMapNoReduce {
         {
             this.inputFilePath = inputFile;
             this.outputDir = outputDir;
-            splitFile(inputFilePath, splits);
+            // get tracker service and send
 
-            //temp calling receive task here
-            receiveCompletedTask(null, null);
+
+            /////////////////
+            //testing getSplit and receiveCompletedTask methods
+            byte[] input = File.ReadAllBytes(inputFilePath);
+            int length = input.Length;
+            for (int i = 0; i < splits; i++)
+            {
+                int start = i * length / splits;
+                int end = start + length / splits;
+                //TODO give client url
+                FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, null);
+                WorkerTaskMetadata workerData = receiveTaskRequest(metadata);
+                Console.WriteLine("+====================================" + i);
+
+
+                byte[] result = System.Text.Encoding.UTF8.GetBytes(workerData.Chunk);
+                TaskResult taskResult = new TaskResult(result, i);
+                receiveCompletedTask(taskResult);
+            }
+
+            //splitFile(inputFilePath, splits);
+
+            //////////////////
         }
 
         public WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata)
         {
             /*we need to set the input file part in workerMetadata.chunk*/
             string mapperName = "Mapper";
-            String inputCode = "E:\\GIT\\PADI\\mapNoReduce\\LibMapper\\bin\\Debug\\LibMapper.dll";
+            String inputCode = @"C:\Users\ashansa\softwares\github\mapNoReduce\LibMapper\bin\Debug\LibMapper.dll";
             byte[] code = File.ReadAllBytes(inputCode);
-            String strToProcess = "this is \r\n my nice string \r\n to process \r\n and it is too small";
-            WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, strToProcess);
+            string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
+            WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
+
+            Console.WriteLine("split ===================> " + workerMetadata.Chunk);
+            Console.WriteLine(Environment.CurrentDirectory);
             return workerMetadata;
         }
 
@@ -55,7 +76,7 @@ namespace PADIMapNoReduce {
             /*we need to get the bytestream and then write to file*/
             try
             {
-                File.WriteAllBytes("E:\\input\\chathuri-"+taskResult.SplitId+".txt",taskResult.Result);
+                File.WriteAllBytes(outputDir + Path.DirectorySeparatorChar + taskResult.SplitId + ".txt", taskResult.Result);
                 return true;
             }
             catch (Exception ex)
@@ -63,6 +84,43 @@ namespace PADIMapNoReduce {
                 return false;//what we do if fails
             }
         }
+
+        private string getSplit(int startByte, int endByte)
+        {
+              using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))
+              {
+                  /////TODO... check for line end
+                  b.BaseStream.Seek(startByte, SeekOrigin.Begin);
+                  byte[] byteSplit = b.ReadBytes(endByte - startByte);
+
+                  string split = System.Text.Encoding.UTF8.GetString(byteSplit, 0, byteSplit.Length);
+                  return split;
+              }
+
+          /*  FileStream fs = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
+
+            byte[] buffer = new byte[(endByte - startByte) * 2];
+            fs.Seek(startByte, SeekOrigin.Current);
+            int size = fs.Read(buffer, startByte, endByte - startByte);
+            int c;
+
+            while ((c = fs.ReadByte()) != -1)
+            {
+                if (c == '\n')
+                {
+                    break;
+                }
+                else
+                {
+                    size++;
+                    buffer[size] = (byte)c;
+                }
+            }
+
+            //fs.Close();
+            return new StreamReader(fs, System.Text.Encoding.UTF8);*/
+        }
+
         public void receiveCompletedTask(StreamReader resultStream, string splitName)
         {
             /////////////// temp place to result files
@@ -80,9 +138,8 @@ namespace PADIMapNoReduce {
                 /////////////////
 
                 string line;
-                Directory.CreateDirectory(outputDir + Path.DirectorySeparatorChar + tempDir);
-                var destinationFile = new StreamWriter(outputDir + Path.DirectorySeparatorChar + 
-                    tempDir + Path.DirectorySeparatorChar + splitName);
+                Directory.CreateDirectory(outputDir);
+                var destinationFile = new StreamWriter(outputDir + Path.DirectorySeparatorChar + splitName);
                 while ((line = resultStream.ReadLine()) != null)
                 {
                     destinationFile.WriteLine(line);
@@ -158,7 +215,7 @@ namespace PADIMapNoReduce {
             //////////////// temp setting output dir to test with others commented
             outputDir = @"C:\Users\ashansa\Documents\tmp\out";
             //combine results and clear output dir
-            string[] resultFileParts = Directory.GetFiles(outputDir + Path.DirectorySeparatorChar + tempDir);
+            string[] resultFileParts = Directory.GetFiles(outputDir);
 
             Array.Sort(resultFileParts);
             foreach (string s in resultFileParts)
