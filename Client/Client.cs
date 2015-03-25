@@ -21,7 +21,7 @@ namespace PADIMapNoReduce {
             ChannelServices.RegisterChannel(channel, true);
             RemotingConfiguration.RegisterWellKnownServiceType( typeof(Client),
                 "Client",WellKnownObjectMode.Singleton);
-            new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", 4, @"C:\Users\ashansa\Documents\tmp\out", null);
+            new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt",3, @"C:\Users\ashansa\Documents\tmp\out", null);
             Console.ReadLine();
         }
 
@@ -87,7 +87,7 @@ namespace PADIMapNoReduce {
 
         private string getSplit(int startByte, int endByte)
         {
-              using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))
+              /*using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))
               {
                   /////TODO... check for line end
                   b.BaseStream.Seek(startByte, SeekOrigin.Begin);
@@ -95,13 +95,32 @@ namespace PADIMapNoReduce {
 
                   string split = System.Text.Encoding.UTF8.GetString(byteSplit, 0, byteSplit.Length);
                   return split;
-              }
+              }*/
 
-          /*  FileStream fs = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
+            FileStream fs2 = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
+
+            ////////tmp
+            if (startByte != 0)
+            {
+                byte[] buf = new byte[2];
+                fs2.Seek(startByte -1, SeekOrigin.Current);
+                int previous =  fs2.ReadByte();
+                //if previous is not 10 go forward to next line
+                Console.WriteLine("byte before first byte--->" + previous);
+                int i;
+                while ((i = fs2.ReadByte()) != '\n')
+                {
+                    startByte++;
+                }
+            }
+           
+            ////////
+            FileStream fs = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
 
             byte[] buffer = new byte[(endByte - startByte) * 2];
             fs.Seek(startByte, SeekOrigin.Current);
-            int size = fs.Read(buffer, startByte, endByte - startByte);
+           // int size = fs.Read(buffer, startByte, endByte - startByte);
+            int size = fs.Read(buffer, 0, endByte - startByte);
             int c;
 
             while ((c = fs.ReadByte()) != -1)
@@ -118,7 +137,8 @@ namespace PADIMapNoReduce {
             }
 
             //fs.Close();
-            return new StreamReader(fs, System.Text.Encoding.UTF8);*/
+            string split = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+            return split;
         }
 
         public void receiveCompletedTask(StreamReader resultStream, string splitName)
