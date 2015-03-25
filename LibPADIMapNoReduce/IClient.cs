@@ -10,6 +10,8 @@ namespace PADIMapNoReduce
     {
         WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata);//fill this object and return to worker
         Boolean receiveCompletedTask(TaskResult taskResult);
-        void receiveWorkCompleteStatus();//once client receive this, job tracker became a worker
+       
+       // DECIDE WHETHER CLIENT DECIDE OR TRACKER SAY 
+       //void receiveWorkCompleteStatus();//once client receive this, job tracker became a worker
     }
 }

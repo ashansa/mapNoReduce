@@ -21,8 +21,10 @@ namespace PADIMapNoReduce {
             ChannelServices.RegisterChannel(channel, true);
             RemotingConfiguration.RegisterWellKnownServiceType( typeof(Client),
                 "Client",WellKnownObjectMode.Singleton);
-            new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt",3, @"C:\Users\ashansa\Documents\tmp\out", null);
-            Console.ReadLine();
+            
+            //BELOW LINE TEMP USING FOR TESTING
+            //new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt",5, @"C:\Users\ashansa\Documents\tmp\out", null);
+            ////Console.ReadLine();
         }
 
         public void submitTask(string inputFile, int splits, string outputDir, string mapperFunctionFile)
@@ -60,7 +62,7 @@ namespace PADIMapNoReduce {
         {
             /*we need to set the input file part in workerMetadata.chunk*/
             string mapperName = "Mapper";
-            String inputCode = @"C:\Users\ashansa\softwares\github\mapNoReduce\LibMapper\bin\Debug\LibMapper.dll";
+            String inputCode = @"..\..\..\LibMapper\bin\Debug\LibMapper.dll";
             byte[] code = File.ReadAllBytes(inputCode);
             string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
@@ -97,32 +99,32 @@ namespace PADIMapNoReduce {
                   return split;
               }*/
 
-            FileStream fs2 = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
+            FileStream fs0 = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
 
-            ////////tmp
+            //if the startByte is in the middle of line start from next line
             if (startByte != 0)
             {
                 byte[] buf = new byte[2];
-                fs2.Seek(startByte -1, SeekOrigin.Current);
-                int previous =  fs2.ReadByte();
+                fs0.Seek(startByte -1, SeekOrigin.Current);
+                int previous =  fs0.ReadByte();
                 //if previous is not 10 go forward to next line
                 Console.WriteLine("byte before first byte--->" + previous);
                 int i;
-                while ((i = fs2.ReadByte()) != '\n')
+                while ((i = fs0.ReadByte()) != '\n')
                 {
                     startByte++;
                 }
             }
+            fs0.Close();
            
-            ////////
             FileStream fs = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
 
             byte[] buffer = new byte[(endByte - startByte) * 2];
             fs.Seek(startByte, SeekOrigin.Current);
-           // int size = fs.Read(buffer, startByte, endByte - startByte);
             int size = fs.Read(buffer, 0, endByte - startByte);
             int c;
 
+            //if endByte is in the middle of line, read until the end of line
             while ((c = fs.ReadByte()) != -1)
             {
                 if (c == '\n')
@@ -136,100 +138,18 @@ namespace PADIMapNoReduce {
                 }
             }
 
-            //fs.Close();
+            fs.Close();
             string split = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
             return split;
         }
 
-        public void receiveCompletedTask(StreamReader resultStream, string splitName)
-        {
-            /////////////// temp place to result files
-            string[] files = Directory.GetFiles(@"C:\Users\ashansa\Documents\tmp\");
-            int count = 0;
-            ////////////
-            
-            foreach (string file in files)
-            {
-                ///////////////// temp creating stream and split name 
-                var sourceFile = new StreamReader(file);
-                resultStream = sourceFile;
-                count++;
-                splitName = "file"+count+".txt";
-                /////////////////
-
-                string line;
-                Directory.CreateDirectory(outputDir);
-                var destinationFile = new StreamWriter(outputDir + Path.DirectorySeparatorChar + splitName);
-                while ((line = resultStream.ReadLine()) != null)
-                {
-                    destinationFile.WriteLine(line);
-                    destinationFile.Flush();
-                }    
-            }
-
-            /////////////////// temp calling task completed method from here
-            receiveWorkCompleteStatus();
-        }
-
+        /* DECIDE WHETHER CLIENT DECIDE OR TRACKER INFORM
         public void receiveWorkCompleteStatus()
         {
-            //TODO combine the result files
-            combineResults();
-        }
+        }*/
 
-        private void splitFile(string sourceFilePath, int splits)
-        {
-            string fileWithoutExtension = Regex.Split(sourceFilePath, ".txt")[0];
-            string destinationFileName = fileWithoutExtension + "-{0}To{1}.txt";
-            int linesPerFile;
-            int totalLineCount = File.ReadAllLines(sourceFilePath).Length;
-            
-            if (totalLineCount % splits == 0)
-                linesPerFile = totalLineCount / splits;
-            else
-                linesPerFile = totalLineCount / splits + 1;
 
-            using (var sourceFile = new StreamReader(sourceFilePath))
-            {
-                var fileCounter = 0;
-                int currentReadingLine = 0;
-                var destinationFile = new StreamWriter(
-                    string.Format(destinationFileName, currentReadingLine +1 , currentReadingLine + linesPerFile ));
-
-                try
-                {
-                    var lineCounter = 0;
-                    string line;
-                    int start = 0;
-                   
-                    while ((line = sourceFile.ReadLine()) != null)
-                    {
-                        currentReadingLine++;
-                        if (lineCounter >= linesPerFile)
-                        {
-                            //starting a new file
-                            lineCounter = 0;
-                            fileCounter++;
-                            start = currentReadingLine;
-
-                            destinationFile.Dispose();
-                            if(currentReadingLine == totalLineCount)
-                                destinationFile = new StreamWriter(string.Format(destinationFileName, start, totalLineCount));
-                            else
-                                destinationFile = new StreamWriter(string.Format(destinationFileName, start, (start + linesPerFile - 1)));
-                        }
-
-                        destinationFile.WriteLine(line);
-                        lineCounter++;
-                    }
-                }
-                finally
-                {
-                    destinationFile.Dispose();
-                }
-            }
-        }
-
+     /* NO NEED TO COMBINE 
         private void combineResults()
         {
             //////////////// temp setting output dir to test with others commented
@@ -243,7 +163,7 @@ namespace PADIMapNoReduce {
                 Console.WriteLine(s);
             }
             Console.ReadLine();
-        }
+        }*/
 
         #region specific
         //to avoid expiring objects within 20 minutes
