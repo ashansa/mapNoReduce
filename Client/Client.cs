@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-
+using System.Configuration;
 
 namespace PADIMapNoReduce
 {
@@ -19,7 +19,8 @@ namespace PADIMapNoReduce
 
         public Client()
         {
-            TcpChannel channel = new TcpChannel(10000);
+            int clientPort = Int16.Parse(ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_PORT]);
+            TcpChannel channel = new TcpChannel(clientPort);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(this, "Client",
             typeof(Client));

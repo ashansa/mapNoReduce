@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>libs\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,17 +45,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientMetadata.cs" />
-    <Compile Include="FileSplitMetadata.cs" />
-    <Compile Include="IClient.cs" />
-    <Compile Include="IJobTracker.cs" />
-    <Compile Include="IMapper.cs" />
-    <Compile Include="IWorker.cs" />
-    <Compile Include="IWorkerTracker.cs" />
-    <Compile Include="Status.cs" />
-    <Compile Include="TaskResult.cs" />
-    <Compile Include="WorkerMetadata.cs" />
-    <Compile Include="WorkerTaskMetadata.cs" />
+    <Compile Include="Entities\ClientMetadata.cs" />
+    <Compile Include="utils\Common.cs" />
+    <Compile Include="utils\Constants.cs" />
+    <Compile Include="Entities\FileSplitMetadata.cs" />
+    <Compile Include="Interfaces\IClient.cs" />
+    <Compile Include="Interfaces\IJobTracker.cs" />
+    <Compile Include="Interfaces\IMapper.cs" />
+    <Compile Include="Interfaces\IWorker.cs" />
+    <Compile Include="Interfaces\IWorkerTracker.cs" />
+    <Compile Include="Entities\Status.cs" />
+    <Compile Include="Entities\TaskResult.cs" />
+    <Compile Include="Entities\WorkerMetadata.cs" />
+    <Compile Include="Entities\WorkerTaskMetadata.cs" />
+    <Compile Include="Logger\ILogger.cs" />
+    <Compile Include="Logger\Log4NetLogger.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="libs\log4net.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

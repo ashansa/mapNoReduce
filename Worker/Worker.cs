@@ -73,7 +73,7 @@ namespace PADIMapNoReduce
             //TODO:either make job tracker or task tracker tasks depending on status
             worker.startWorkerTasks();//start threads for Worker task
             //TODO: start tasks for jobtracker
-
+            Common.Logger().LogInfo("Master started", string.Empty, string.Empty);
             Console.ReadLine();
         }
 
@@ -132,14 +132,6 @@ namespace PADIMapNoReduce
 
         #endregion
 
-        #region specific
-        public override object InitializeLifetimeService()
-        {
-            //return base.InitializeLifetimeService();
-            return null;
-        }
-        #endregion
-
         #region services exposed to puppet
         //will be called by puppet master
 
@@ -174,5 +166,16 @@ namespace PADIMapNoReduce
             return existingWorkerList;
         }
         #endregion
+
+        #region specific
+        public override object InitializeLifetimeService()
+        {
+            //return base.InitializeLifetimeService();
+            return null;
+        }
+        #endregion
+
     }
+
+
 }
