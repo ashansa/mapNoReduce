@@ -11,6 +11,7 @@ namespace PADIMapNoReduce.Entities
     {
         String clientURL;
         List<short> remainingSplits = new List<short>();
+        List<short> completedSplits = new List<short>();
         Dictionary<Int32, String> existingWorkerMap = new Dictionary<Int32, string>();
         Dictionary<Int16, Status> mapTaskDetails = new Dictionary<Int16, Status>();
 

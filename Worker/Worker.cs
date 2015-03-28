@@ -1,4 +1,5 @@
-﻿using Server.worker;
+﻿using Server.tracker;
+using Server.worker;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -17,6 +18,7 @@ namespace PADIMapNoReduce
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
         WorkerTask workerTask;
+        TrackerTask trackerTask;
         int workerId;
         Dictionary<Int32,String> existingWorkerMap = new Dictionary<Int32,string>();
         bool isJobTracker;
@@ -133,7 +135,9 @@ namespace PADIMapNoReduce
             workerTask.stopWorkerThreads();
 
             //start jobtracker threads
-
+            trackerTask = new TrackerTask();
+            trackerTask.TrackerDetails.ExistingWorkerMap
+                t
         }
 
         public void receiveStatus(Status status)
@@ -150,7 +154,15 @@ namespace PADIMapNoReduce
         /*will call by worker when result has sent to client*/
         public void resultSentToClient(int nodeId, int splitId)
         {
-            Console.WriteLine("results sent to client");
+            //add split to completed
+
+
+            //stop tracker threads
+
+
+            //resume worker threads
+            workerTask = new WorkerTask(nodeId);
+            workerTask.startWorkerThreads();
         }
 
         #endregion
