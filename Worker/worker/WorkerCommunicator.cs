@@ -39,17 +39,18 @@ namespace Server.worker
                 tracker.receiveStatus(status);*/
         }
 
-        internal List<string> getExistingWorkerURLList(string entryURL)
+        internal Dictionary<Int32,string> getExistingWorkerURLList(string entryURL)
         {
             IWorker worker = (IWorker)Activator.GetObject(typeof(IWorker), entryURL);
             return worker.getExistingWorkers();
         }
 
-        internal void notifyExistingWorkers(String newWorkerURL,List<string> existingWorkerList)
+        internal void notifyExistingWorkers(int workerId,String newWorkerURL,Dictionary<Int32,string> existingWorkerList)
         {
-           foreach(string URL in existingWorkerList){
+            foreach (KeyValuePair<Int32, string> entry in existingWorkerList)
+            {
                IWorker worker = (IWorker)Activator.GetObject(typeof(IWorker), URL);
-               worker.addNewWorker(newWorkerURL);
+               worker.addNewWorker(workerId,newWorkerURL);
            }
         }
     }

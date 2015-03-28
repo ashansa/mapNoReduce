@@ -10,13 +10,24 @@ namespace Server.worker
 {
     public class WorkerTask
     {
-
+        int workerId;
         List<FileSplitMetadata> splitMetadataList = new List<FileSplitMetadata>();
         List<TaskResult> taskResultList = new List<TaskResult>();
         Thread splitProcessor;
         Thread resultSender;
         Thread statusUpdateNotificationThread;
         MapTask mapTask = new MapTask();
+
+        public WorkerTask(int workerId)
+        {
+           this.workerId = workerId;
+        }
+
+        public int WorkerId
+        {
+            get { return workerId; }
+            set { workerId = value; }
+        }
 
         public MapTask getMapTask()//this is the currently runing map task
         {
@@ -96,7 +107,7 @@ namespace Server.worker
                 WorkerTaskMetadata workerTaskMetadata = workerTask.getTaskFromClient(fileSplitMetadata);
                 mapTask.SplitId = fileSplitMetadata.SplitId;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata);
-                addTaskToTaskList(taskResult);
+                addTaskToTaskResults(taskResult);
             }
         }
         private void sendStatusUpdates()
@@ -113,7 +124,7 @@ namespace Server.worker
         }
 
 
-        private void addTaskToTaskList(TaskResult taskResult)
+        private void addTaskToTaskResults(TaskResult taskResult)
         {
             lock (taskResultList)
             {

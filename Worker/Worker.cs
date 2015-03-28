@@ -16,9 +16,16 @@ namespace PADIMapNoReduce
     {
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
-        WorkerTask workerTask = new WorkerTask();
+        WorkerTask workerTask;
         int workerId;
-        List<String> existingWorkerList = new List<string>();
+        Dictionary<Int32,String> existingWorkerMap = new Dictionary<Int32,string>();
+        bool isJobTracker;
+
+        public bool IsJobTracker
+        {
+            get { return isJobTracker; }
+            set { isJobTracker = value; }
+        }
 
         public int WorkerId
         {
@@ -31,10 +38,10 @@ namespace PADIMapNoReduce
             this.workerId = id;
         }
 
-        public List<String> ExistingWorkerList
+        public Dictionary<Int32,String> ExistingWorkerList
         {
-            get { return existingWorkerList; }
-            set { existingWorkerList = value; }
+            get { return existingWorkerMap; }
+            set { existingWorkerMap = value; }
         }
 
         /// <summary>
@@ -119,7 +126,7 @@ namespace PADIMapNoReduce
             //now he is a Job Tracker. Implement all job tracker functions upon this
             //Start channel with other workers as Job tracker
 
-
+            isJobTracker = true;
             //stop runing worker(WorkerTask) threads
             workerTask.stopWorkerThreads();
 
@@ -130,6 +137,11 @@ namespace PADIMapNoReduce
         {
         }
 
+        public void jobCompleted(int nodeId)
+        {
+
+        }
+
         #endregion
 
         #region services exposed to puppet
@@ -138,17 +150,18 @@ namespace PADIMapNoReduce
         public Boolean initWorker(WorkerMetadata workerMetadata)
         {
             WorkerCommunicator communicator = new WorkerCommunicator();
-            List<String> existingWorkerList = new List<string>();
+            this.WorkerId = workerMetadata.WorkerId;
+            workerTask = new WorkerTask(WorkerId);
             if (workerMetadata.EntryURL == null || workerMetadata.EntryURL == String.Empty)//this is the first worker
             {
-                existingWorkerList.Add(workerMetadata.ServiceURL);
+                existingWorkerMap.Add(workerMetadata.WorkerId,workerMetadata.ServiceURL);
             }
             else//connect to entryWorker and get urlList
             {
-                existingWorkerList = communicator.getExistingWorkerURLList(workerMetadata.EntryURL);
+                existingWorkerMap = communicator.getExistingWorkerURLList(workerMetadata.EntryURL);
                 //notify all others about entry
-                communicator.notifyExistingWorkers(workerMetadata.ServiceURL, existingWorkerList);
-                existingWorkerList.Add(workerMetadata.ServiceURL);
+                communicator.notifyExistingWorkers(workerId,workerMetadata.ServiceURL, existingWorkerMap);
+                existingWorkerMap.Add(workerMetadata.WorkerId,workerMetadata.ServiceURL);//add self
             }
 
             //TODO: start worker
@@ -156,21 +169,20 @@ namespace PADIMapNoReduce
             return false;
         }
 
-        public void addNewWorker(String newWorkerURL)
+        public void addNewWorker(int nodeId,String newWorkerURL)
         {
-            existingWorkerList.Add(newWorkerURL);
+            existingWorkerMap.Add(nodeId, newWorkerURL);
         }
 
-        public List<String> getExistingWorkers()
+        public Dictionary<Int32,String> getExistingWorkers()
         {
-            return existingWorkerList;
+            return existingWorkerMap;
         }
         #endregion
 
         #region specific
         public override object InitializeLifetimeService()
         {
-            //return base.InitializeLifetimeService();
             return null;
         }
         #endregion
