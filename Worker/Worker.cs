@@ -135,9 +135,17 @@ namespace PADIMapNoReduce
 
         public void receiveStatus(Status status)
         {
+            Console.WriteLine("result received " + status.PercentageCompleted + "%");
         }
 
-        public void jobCompleted(int nodeId)
+        /*will call by worker when job completed   */
+        public void jobCompleted(int nodeId,int splitId)
+        {
+            Console.WriteLine("job completed");
+        }
+
+        /*will call by worker when result has sent to client*/
+        public void resultSentToClient(int nodeId, int splitId)
         {
 
         }

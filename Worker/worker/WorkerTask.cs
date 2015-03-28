@@ -103,10 +103,11 @@ namespace Server.worker
                         continue;
                     }
                 }
-                WorkerCommunicator workerTask = new WorkerCommunicator();
-                WorkerTaskMetadata workerTaskMetadata = workerTask.getTaskFromClient(fileSplitMetadata);
+                WorkerCommunicator communicator = new WorkerCommunicator();
+                WorkerTaskMetadata workerTaskMetadata = communicator.getTaskFromClient(fileSplitMetadata);
                 mapTask.SplitId = fileSplitMetadata.SplitId;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata);
+                communicator.notifyTaskCompleteEvent(workerId,fileSplitMetadata.SplitId);
                 addTaskToTaskResults(taskResult);
             }
         }

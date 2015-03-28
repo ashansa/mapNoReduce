@@ -99,6 +99,8 @@ namespace Server.worker
                     }
                 }
                 Console.WriteLine("total sequences" + lineNumber);
+                ////send complete status
+
                 return createTaskResultBoject(splitMetaData.SplitId);
             }
         }

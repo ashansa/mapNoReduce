@@ -9,7 +9,7 @@ namespace PADIMapNoReduce
   {
       void receiveJobRequest(ClientMetadata clientMetadata);
       void receiveStatus(Status status);
-      void jobCompleted(int nodeId);
-
+      void jobCompleted(int nodeId,int splitId);
+      void resultSentToClient(int nodeId, int splitId);
     }
 }

@@ -41,7 +41,7 @@ namespace Server.worker
 
         internal Dictionary<Int32,string> getExistingWorkerURLList(string entryURL)
         {
-            IWorker worker = (IWorker)Activator.GetObject(typeof(IWorker), entryURL);
+            IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entryURL);
             return worker.getExistingWorkers();
         }
 
@@ -49,9 +49,15 @@ namespace Server.worker
         {
             foreach (KeyValuePair<Int32, string> entry in existingWorkerList)
             {
-               IWorker worker = (IWorker)Activator.GetObject(typeof(IWorker), URL);
-               worker.addNewWorker(workerId,newWorkerURL);
+               IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+               worker.addNewWorker(entry.Key,newWorkerURL);
            }
+        }
+
+        internal void notifyTaskCompleteEvent(int workerId, int splitId)
+        {
+            IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+            worker.jobCompleted(workerId, splitId);
         }
     }
 }
