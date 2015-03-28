@@ -17,21 +17,37 @@ namespace PADIMapNoReduce
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
         WorkerTask workerTask = new WorkerTask();
-        public Worker()
-        {
+        int workerId;
+        List<String> existingWorkerList = new List<string>();
 
+        public int WorkerId
+        {
+            get { return workerId; }
+            set { workerId = value; }
+        }
+
+        public Worker(int id)
+        {
+            this.workerId = id;
+        }
+
+        public List<String> ExistingWorkerList
+        {
+            get { return existingWorkerList; }
+            set { existingWorkerList = value; }
         }
 
         /// <summary>
         /// Application entry point Main
         /// </summary>
         /// <param name="args">No required arguments</param>
-        static void Main(string[] args)
+
+        public static void Main()
         {
             /*Workers are listening*/
             TcpChannel channel = new TcpChannel(10001);
             ChannelServices.RegisterChannel(channel, true);
-            Worker worker = new Worker();
+            Worker worker = new Worker(100);
             RemotingServices.Marshal(worker, "Worker",
               typeof(Worker));
 
@@ -92,6 +108,7 @@ namespace PADIMapNoReduce
         {
             return workerTask.suspendOrRemoveMapTask(splitId);
         }
+
         #endregion
         #endregion
 
@@ -120,6 +137,41 @@ namespace PADIMapNoReduce
         {
             //return base.InitializeLifetimeService();
             return null;
+        }
+        #endregion
+
+        #region services exposed to puppet
+        //will be called by puppet master
+
+        public Boolean initWorker(WorkerMetadata workerMetadata)
+        {
+            WorkerCommunicator communicator = new WorkerCommunicator();
+            List<String> existingWorkerList = new List<string>();
+            if (workerMetadata.EntryURL == null || workerMetadata.EntryURL == String.Empty)//this is the first worker
+            {
+                existingWorkerList.Add(workerMetadata.ServiceURL);
+            }
+            else//connect to entryWorker and get urlList
+            {
+                existingWorkerList = communicator.getExistingWorkerURLList(workerMetadata.EntryURL);
+                //notify all others about entry
+                communicator.notifyExistingWorkers(workerMetadata.ServiceURL, existingWorkerList);
+                existingWorkerList.Add(workerMetadata.ServiceURL);
+            }
+
+            //TODO: start worker
+            //startWorker();
+            return false;
+        }
+
+        public void addNewWorker(String newWorkerURL)
+        {
+            existingWorkerList.Add(newWorkerURL);
+        }
+
+        public List<String> getExistingWorkers()
+        {
+            return existingWorkerList;
         }
         #endregion
     }

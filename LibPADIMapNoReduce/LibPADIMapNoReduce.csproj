@@ -50,6 +50,7 @@
     <Compile Include="IWorkerTracker.cs" />
     <Compile Include="Status.cs" />
     <Compile Include="TaskResult.cs" />
+    <Compile Include="WorkerMetadata.cs" />
     <Compile Include="WorkerTaskMetadata.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -38,5 +38,19 @@ namespace Server.worker
                           Worker.JOBTRACKER_URL);
                 tracker.receiveStatus(status);*/
         }
+
+        internal List<string> getExistingWorkerURLList(string entryURL)
+        {
+            IWorker worker = (IWorker)Activator.GetObject(typeof(IWorker), entryURL);
+            return worker.getExistingWorkers();
+        }
+
+        internal void notifyExistingWorkers(String newWorkerURL,List<string> existingWorkerList)
+        {
+           foreach(string URL in existingWorkerList){
+               IWorker worker = (IWorker)Activator.GetObject(typeof(IWorker), URL);
+               worker.addNewWorker(newWorkerURL);
+           }
+        }
     }
 }

@@ -8,30 +8,24 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 
-namespace PADIMapNoReduce {
+namespace PADIMapNoReduce
+{
 
-    public class Client :MarshalByRefObject, IClient {
+    public class Client : MarshalByRefObject, IClient
+    {
 
-        private string inputFilePath;
-        private string outputDir;
-
-        static void Main(string[] args) {
-
-            //BELOW LINE TEMP USING FOR TESTING
-           // new Client().submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", @"C:\Users\ashansa\Documents\tmp\out",5, null);
-            ////Console.ReadLine();
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ClientApp());
-        }
+        private string inputFilePath = "E:\\input\\chathuri.txt";
+        private string outputDir = "E:\\input";
 
         public Client()
         {
             TcpChannel channel = new TcpChannel(10000);
             ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(Client),
-                "Client", WellKnownObjectMode.Singleton);
+            RemotingServices.Marshal(this, "Client",
+            typeof(Client));
+
+            /* RemotingConfiguration.RegisterWellKnownServiceType(typeof(Client),
+                 "Client", WellKnownObjectMode.Singleton);*/
         }
 
         public void submitTask(string inputFile, string outputDir, int splits, string mapperFunctionFile)
@@ -71,7 +65,8 @@ namespace PADIMapNoReduce {
             string mapperName = "Mapper";
             String inputCode = @"..\..\..\LibMapper\bin\Debug\LibMapper.dll";
             byte[] code = File.ReadAllBytes(inputCode);
-            string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
+            //string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
+            string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
 
             Console.WriteLine("split ===================> " + workerMetadata.Chunk);
@@ -96,15 +91,15 @@ namespace PADIMapNoReduce {
 
         private string getSplit(int startByte, int endByte)
         {
-              /*using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))
-              {
-                  /////TODO... check for line end
-                  b.BaseStream.Seek(startByte, SeekOrigin.Begin);
-                  byte[] byteSplit = b.ReadBytes(endByte - startByte);
+            /*using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))
+            {
+                /////TODO... check for line end
+                b.BaseStream.Seek(startByte, SeekOrigin.Begin);
+                byte[] byteSplit = b.ReadBytes(endByte - startByte);
 
-                  string split = System.Text.Encoding.UTF8.GetString(byteSplit, 0, byteSplit.Length);
-                  return split;
-              }*/
+                string split = System.Text.Encoding.UTF8.GetString(byteSplit, 0, byteSplit.Length);
+                return split;
+            }*/
 
             FileStream fs0 = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
 
@@ -112,8 +107,8 @@ namespace PADIMapNoReduce {
             if (startByte != 0)
             {
                 byte[] buf = new byte[2];
-                fs0.Seek(startByte -1, SeekOrigin.Current);
-                int previous =  fs0.ReadByte();
+                fs0.Seek(startByte - 1, SeekOrigin.Current);
+                int previous = fs0.ReadByte();
                 //if previous is not 10 go forward to next line
                 Console.WriteLine("byte before first byte--->" + previous);
                 int i;
@@ -123,7 +118,7 @@ namespace PADIMapNoReduce {
                 }
             }
             fs0.Close();
-           
+
             FileStream fs = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
 
             byte[] buffer = new byte[(endByte - startByte) * 2];
@@ -156,21 +151,21 @@ namespace PADIMapNoReduce {
         }*/
 
 
-     /* NO NEED TO COMBINE 
-        private void combineResults()
-        {
-            //////////////// temp setting output dir to test with others commented
-            outputDir = @"C:\Users\ashansa\Documents\tmp\out";
-            //combine results and clear output dir
-            string[] resultFileParts = Directory.GetFiles(outputDir);
+        /* NO NEED TO COMBINE 
+           private void combineResults()
+           {
+               //////////////// temp setting output dir to test with others commented
+               outputDir = @"C:\Users\ashansa\Documents\tmp\out";
+               //combine results and clear output dir
+               string[] resultFileParts = Directory.GetFiles(outputDir);
 
-            Array.Sort(resultFileParts);
-            foreach (string s in resultFileParts)
-            {
-                Console.WriteLine(s);
-            }
-            Console.ReadLine();
-        }*/
+               Array.Sort(resultFileParts);
+               foreach (string s in resultFileParts)
+               {
+                   Console.WriteLine(s);
+               }
+               Console.ReadLine();
+           }*/
 
         #region specific
         //to avoid expiring objects within 20 minutes
