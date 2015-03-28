@@ -56,6 +56,7 @@
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="tracker\TrackerTask.cs" />
     <Compile Include="Worker.cs" />
     <Compile Include="worker\MapTask.cs" />
     <Compile Include="worker\WorkerCommunicator.cs" />
@@ -65,7 +66,6 @@
     <Folder Include="bin\Debug\" />
     <Folder Include="bin\Release\" />
     <Folder Include="obj\Debug\TempPE\" />
-    <Folder Include="tracker\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

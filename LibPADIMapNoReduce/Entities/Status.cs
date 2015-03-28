@@ -9,27 +9,49 @@ namespace PADIMapNoReduce
    public class Status
     {
         int nodeId;
+        double cpuUsage;
+        double percentageCompleted;
+        double timeTakenTillNow;
+        int splitId;
+        StatusType statusType;
 
+        public StatusType StatusType
+        {
+            get { return statusType; }
+            set { statusType = value; }
+        }
         public int NodeId
         {
             get { return nodeId; }
             set { nodeId = value; }
         }
-       double cpuUsage;
-       double percentageCompleted;
 
        public double PercentageCompleted
        {
            get { return percentageCompleted; }
            set { percentageCompleted = value; }
        }
-       double timeTakenTillNow;
+       
 
        public double TimeTakenTillNow
        {
            get { return timeTakenTillNow; }
            set { timeTakenTillNow = value; }
        }
-       int splitId;
+
+       public int SplitId
+       {
+           get { return splitId; }
+           set { splitId = value; }
+       }
+    }
+
+    public enum StatusType
+    {
+     INPROGRESS,
+     COMPLETED,
+     SUSPENDED,
+     FILES_SENT,
+     NOT_SEND_TO_WORKER
     }
 }

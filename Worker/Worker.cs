@@ -80,7 +80,7 @@ namespace PADIMapNoReduce
             //TODO:either make job tracker or task tracker tasks depending on status
             worker.startWorkerTasks();//start threads for Worker task
             //TODO: start tasks for jobtracker
-            Common.Logger().LogInfo("Master started", string.Empty, string.Empty);
+            Common.Logger().LogInfo("Worker Started", string.Empty, string.Empty);
             Console.ReadLine();
         }
 
@@ -123,6 +123,8 @@ namespace PADIMapNoReduce
         #region JobTracker
         public void receiveJobRequest(ClientMetadata clientMetadata)
         {
+            Console.WriteLine("Job request received");
+            Common.Logger().LogInfo("Job Request received", string.Empty, string.Empty);
             //now he is a Job Tracker. Implement all job tracker functions upon this
             //Start channel with other workers as Job tracker
 
@@ -131,6 +133,7 @@ namespace PADIMapNoReduce
             workerTask.stopWorkerThreads();
 
             //start jobtracker threads
+
         }
 
         public void receiveStatus(Status status)
@@ -147,7 +150,7 @@ namespace PADIMapNoReduce
         /*will call by worker when result has sent to client*/
         public void resultSentToClient(int nodeId, int splitId)
         {
-
+            Console.WriteLine("results sent to client");
         }
 
         #endregion

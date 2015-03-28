@@ -5,6 +5,7 @@ using System.Text;
 
 namespace PADIMapNoReduce
 {
+    [Serializable]
     public class WorkerMetadata
     {
         int workerId;

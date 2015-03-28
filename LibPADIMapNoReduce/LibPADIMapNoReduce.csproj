@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\ClientMetadata.cs" />
+    <Compile Include="Entities\TrackerDetails.cs" />
     <Compile Include="utils\Common.cs" />
     <Compile Include="utils\Constants.cs" />
     <Compile Include="Entities\FileSplitMetadata.cs" />

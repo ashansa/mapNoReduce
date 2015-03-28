@@ -67,7 +67,7 @@ namespace Server.worker
 
         private void sendResults()
         {
-            WorkerCommunicator workerTask = new WorkerCommunicator();
+            WorkerCommunicator communicator = new WorkerCommunicator();
             TaskResult taskResult;
             while (true)
             {
@@ -81,7 +81,9 @@ namespace Server.worker
                     taskResult = taskResultList[0];
                     taskResultList.RemoveAt(0);
                 }
-                workerTask.sendResultsToClient(taskResult);
+                communicator.sendResultsToClient(taskResult);
+                communicator.notifyResultsSentToClientEvent(workerId,taskResult.SplitId);
+
             }
         }
 
@@ -107,7 +109,7 @@ namespace Server.worker
                 WorkerTaskMetadata workerTaskMetadata = communicator.getTaskFromClient(fileSplitMetadata);
                 mapTask.SplitId = fileSplitMetadata.SplitId;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata);
-                communicator.notifyTaskCompleteEvent(workerId,fileSplitMetadata.SplitId);
+                communicator.notifyTaskCompletedEvent(workerId,fileSplitMetadata.SplitId);
                 addTaskToTaskResults(taskResult);
             }
         }

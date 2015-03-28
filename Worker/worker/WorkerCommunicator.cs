@@ -33,10 +33,10 @@ namespace Server.worker
         {
             Console.WriteLine("sending status updates " + status.PercentageCompleted);
 
-            /*    IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(
+               IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(
                           typeof(IWorkerTracker),
                           Worker.JOBTRACKER_URL);
-                tracker.receiveStatus(status);*/
+                tracker.receiveStatus(status);
         }
 
         internal Dictionary<Int32,string> getExistingWorkerURLList(string entryURL)
@@ -54,10 +54,16 @@ namespace Server.worker
            }
         }
 
-        internal void notifyTaskCompleteEvent(int workerId, int splitId)
+        internal void notifyTaskCompletedEvent(int workerId, int splitId)
         {
-            IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-            worker.jobCompleted(workerId, splitId);
+            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+            tracker.jobCompleted(workerId, splitId);
+        }
+
+        internal void notifyResultsSentToClientEvent(int workerId, int splitId)
+        {
+            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+            tracker.resultSentToClient(workerId, splitId);
         }
     }
 }
