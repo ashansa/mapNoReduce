@@ -25,23 +25,46 @@ namespace Server.tracker
         public void splitJob(JobMetadata jobMetadata)
         {
             Console.WriteLine("splitting job");
-            /* long totalBytes = jobMetadata.TotalByteCount;
+             long totalBytes = jobMetadata.TotalByteCount;
             long splits = jobMetadata.SplitCount;
 
            for (int i = 0; i < splits; i++)
            {
                long start = i * totalBytes / splits;
                long end = start + totalBytes / splits;
-               //TODO give client url
-              FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, null);
-               WorkerTaskMetadata workerData = receiveTaskRequest(metadata);
+             
+               //TODO : give tracker URL dynamically
+              FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, jobMetadata.ClientUrl, "tcp://localhost:10001/Worker");
+              trackerDetails.addFileSplit(metadata);
+             
+               //call worker remote object.receiveTaskReq.
+              /* WorkerTaskMetadata workerData = receiveTaskRequest(metadata);
                Console.WriteLine("+====================================" + i);
 
 
                byte[] result = System.Text.Encoding.UTF8.GetBytes(workerData.Chunk);
                TaskResult taskResult = new TaskResult(result, i);
-               receiveCompletedTask(taskResult);
-           }*/
+               receiveCompletedTask(taskResult);*/
+           }
+
+           distributeTasks();
+        }
+
+        private void distributeTasks()
+        {
+            //TODO : for now assume splits < workers
+            // implement to check the completed status and send jobs
+            // TODO: handle when trackerDetails.ExistingWorkerMap.Count = 0
+          
+            for(int i = 0; i < trackerDetails.FileSplitData.Count; i++) 
+            {
+                FileSplitMetadata jobData = trackerDetails.FileSplitData[i];
+                /*TODO: get from list and use remoting to call them
+                KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i);
+                IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);*/
+                IWorker worker = new Worker(10+i);
+                worker.receiveTask(jobData);
+            }
         }
 
     }

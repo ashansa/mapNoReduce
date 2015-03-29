@@ -62,7 +62,6 @@ namespace PADIMapNoReduce
             Worker worker = new Worker(100);
             RemotingServices.Marshal(worker, "Worker",typeof(Worker));
 
-
            /* Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata(1, 4, 8, "clientURL");
             splitMetadata.SplitId = 1;
@@ -109,7 +108,7 @@ namespace PADIMapNoReduce
             CLIENT_URL = splitMetadata.ClientUrl;
             JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
             workerTask.addSplitToSplitList(splitMetadata);
-
+            Console.WriteLine("worker recieved the job details");
             //we don't block the job tracker as we execute task seperately     
         }
 
