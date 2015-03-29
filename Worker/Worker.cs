@@ -1,4 +1,5 @@
-﻿using Server.tracker;
+﻿using PADIMapNoReduce.Entities;
+using Server.tracker;
 using Server.worker;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,9 @@ namespace PADIMapNoReduce
     {
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
-        WorkerTask workerTask;
+
+        //TODO: change this to get from puppet
+        WorkerTask workerTask = new WorkerTask(1);
         TrackerTask trackerTask;
         int workerId;
         Dictionary<Int32,String> existingWorkerMap = new Dictionary<Int32,string>();
@@ -57,10 +60,10 @@ namespace PADIMapNoReduce
             TcpChannel channel = new TcpChannel(10001);
             ChannelServices.RegisterChannel(channel, true);
             Worker worker = new Worker(100);
-            RemotingServices.Marshal(worker, "Worker",
-              typeof(Worker));
+            RemotingServices.Marshal(worker, "Worker",typeof(Worker));
 
-            Console.WriteLine("starting tasks");
+
+           /* Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata(1, 4, 8, "clientURL");
             splitMetadata.SplitId = 1;
             splitMetadata.StartPosition = 4;
@@ -77,12 +80,14 @@ namespace PADIMapNoReduce
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
             worker.receiveTask(splitMetadata);
-
-
+*/
+            
             //TODO:either make job tracker or task tracker tasks depending on status
+            Console.WriteLine("worker going to start");
             worker.startWorkerTasks();//start threads for Worker task
             //TODO: start tasks for jobtracker
             Common.Logger().LogInfo("Worker Started", string.Empty, string.Empty);
+            Console.WriteLine("worker started");
             Console.ReadLine();
         }
 
@@ -123,7 +128,7 @@ namespace PADIMapNoReduce
 
 
         #region JobTracker
-        public void receiveJobRequest(ClientMetadata clientMetadata)
+        public void receiveJobRequest(JobMetadata jobMetadata)
         {
             Console.WriteLine("Job request received");
             Common.Logger().LogInfo("Job Request received", string.Empty, string.Empty);
@@ -135,9 +140,11 @@ namespace PADIMapNoReduce
             workerTask.stopWorkerThreads();
 
             //start jobtracker threads
-            trackerTask = new TrackerTask();
-            trackerTask.TrackerDetails.ExistingWorkerMap
-                t
+            TrackerDetails trackerDetails = new TrackerDetails(Constants.CLIENT_URL, existingWorkerMap);
+            trackerTask = new TrackerTask(trackerDetails);
+
+            trackerTask.splitJob(jobMetadata);
+                
         }
 
         public void receiveStatus(Status status)

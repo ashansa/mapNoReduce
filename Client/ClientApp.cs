@@ -11,11 +11,13 @@ namespace PADIMapNoReduce
 {
     public partial class ClientApp : Form
     {
-        [STAThread]
+        /*[STAThread]
         static void Main()
         {
+            //Run UI
             Application.Run(new ClientApp());
-        }
+        }*/
+
         public ClientApp()
         {
             InitializeComponent();
@@ -24,9 +26,8 @@ namespace PADIMapNoReduce
 
         private void btSubmit_Click(object sender, EventArgs e)
         {
-           /* Client client = new Client();*/
             int splits = Int32.Parse(txSplits.Text);
-            new Client().submitTask(txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
+           new Client(Constants.CLIENT_URL).submitTask(txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
         }
     }
 }

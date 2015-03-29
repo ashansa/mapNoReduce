@@ -6,22 +6,22 @@ using System.Text;
 namespace PADIMapNoReduce
 {
     [Serializable]
-   public class ClientMetadata //to be sent to the jobtracker
+   public class JobMetadata //to be sent to the jobtracker
     {
-        long totalLineCount;
+        long totalByteCount;
         long splitCount;
         String clientUrl;
 
-        public ClientMetadata(long totalLineCount, long splitCount, String clientUrl)
+        public JobMetadata(long totalByteCount, long splitCount, String clientUrl)
         {
-            this.totalLineCount = totalLineCount;
+            this.totalByteCount = totalByteCount;
             this.splitCount = splitCount;
             this.clientUrl = clientUrl;
         }
-        public long TotalLineCount
+        public long TotalByteCount
         {
-            get { return totalLineCount; }
-            set { totalLineCount = value; }
+            get { return totalByteCount; }
+            set { totalByteCount = value; }
         }
        
         public long SplitCount

@@ -56,14 +56,14 @@ namespace Server.worker
 
         internal void notifyTaskCompletedEvent(int workerId, int splitId)
         {
-            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-            tracker.jobCompleted(workerId, splitId);
+            //IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+            //tracker.jobCompleted(workerId, splitId);
         }
 
         internal void notifyResultsSentToClientEvent(int workerId, int splitId)
         {
-            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-            tracker.resultSentToClient(workerId, splitId);
+            //IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+            //tracker.resultSentToClient(workerId, splitId);
         }
     }
 }

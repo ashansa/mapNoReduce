@@ -45,7 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\ClientMetadata.cs" />
+    <Compile Include="Entities\JobMetadata.cs" />
     <Compile Include="Entities\TrackerDetails.cs" />
     <Compile Include="utils\Common.cs" />
     <Compile Include="utils\Constants.cs" />

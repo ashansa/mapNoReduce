@@ -15,6 +15,12 @@ namespace PADIMapNoReduce.Entities
         Dictionary<Int32, String> existingWorkerMap = new Dictionary<Int32, string>();
         Dictionary<Int16, Status> mapTaskDetails = new Dictionary<Int16, Status>();
 
+        public TrackerDetails(string clientURL, Dictionary<Int32, String> workerMap)
+        {
+            this.clientURL = clientURL;
+            this.existingWorkerMap = workerMap;
+        }
+
         public String ClientURL
         {
             get { return clientURL; }
