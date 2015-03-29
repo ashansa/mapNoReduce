@@ -13,18 +13,28 @@ namespace PADIMapNoReduce
 
     public class Client : MarshalByRefObject, IClient
     {
-
+        string url;
         private string inputFilePath = "E:\\input\\chathuri.txt";
         private string outputDir = "E:\\input";
+        IWorkerTracker contactingWorker;
 
-        public Client()
+        static void Main()
         {
+            //call submit method directly
+            Console.WriteLine("starting service");
+            new Client(Constants.CLIENT_URL).submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", @"C:\Users\ashansa\Documents\tmp\out", 3, null);
+            Console.ReadLine();
+        }
+
+        public Client(string url)
+        {
+            this.url = url;
             int clientPort = Int16.Parse(ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_PORT]);
             TcpChannel channel = new TcpChannel(clientPort);
             ChannelServices.RegisterChannel(channel, true);
-            RemotingServices.Marshal(this, "Client",
-            typeof(Client));
+            RemotingServices.Marshal(this, "Client", typeof(Client));
 
+            contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), "tcp://localhost:10001/Worker");
             /* RemotingConfiguration.RegisterWellKnownServiceType(typeof(Client),
                  "Client", WellKnownObjectMode.Singleton);*/
         }
@@ -33,13 +43,13 @@ namespace PADIMapNoReduce
         {
             this.inputFilePath = inputFile;
             this.outputDir = outputDir;
-            // get tracker service and send
-
-
-            /////////////////
-            //testing getSplit and receiveCompletedTask methods
+           
             byte[] input = File.ReadAllBytes(inputFilePath);
-            int length = input.Length;
+            JobMetadata jobDetails = new JobMetadata(input.Length, splits, url);
+            contactingWorker.receiveJobRequest(jobDetails);
+
+
+           /* int length = input.Length;
             for (int i = 0; i < splits; i++)
             {
                 int start = i * length / splits;
@@ -53,8 +63,7 @@ namespace PADIMapNoReduce
                 byte[] result = System.Text.Encoding.UTF8.GetBytes(workerData.Chunk);
                 TaskResult taskResult = new TaskResult(result, i);
                 receiveCompletedTask(taskResult);
-            }
-
+            }*/
             //splitFile(inputFilePath, splits);
 
             //////////////////
@@ -66,8 +75,8 @@ namespace PADIMapNoReduce
             string mapperName = "Mapper";
             String inputCode = @"..\..\..\LibMapper\bin\Debug\LibMapper.dll";
             byte[] code = File.ReadAllBytes(inputCode);
-            //string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
-            string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
+            string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
+            //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
 
             Console.WriteLine("split ===================> " + workerMetadata.Chunk);
@@ -90,7 +99,7 @@ namespace PADIMapNoReduce
             }
         }
 
-        private string getSplit(int startByte, int endByte)
+        private string getSplit(long startByte, long endByte)
         {
             /*using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))
             {
@@ -124,7 +133,7 @@ namespace PADIMapNoReduce
 
             byte[] buffer = new byte[(endByte - startByte) * 2];
             fs.Seek(startByte, SeekOrigin.Current);
-            int size = fs.Read(buffer, 0, endByte - startByte);
+            int size = fs.Read(buffer, 0, (int)(endByte - startByte));
             int c;
 
             //if endByte is in the middle of line, read until the end of line
