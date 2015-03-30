@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibPADIMapNoReduce", "LibPA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker", "Worker\Worker.csproj", "{44CE6BD1-553B-4126-BA6A-D4CC13884563}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puppet Master", "Puppet Master\Puppet Master.csproj", "{3AA3BBAC-B2B5-4708-A4EC-D9A0047E1CB0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{44CE6BD1-553B-4126-BA6A-D4CC13884563}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44CE6BD1-553B-4126-BA6A-D4CC13884563}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44CE6BD1-553B-4126-BA6A-D4CC13884563}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AA3BBAC-B2B5-4708-A4EC-D9A0047E1CB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AA3BBAC-B2B5-4708-A4EC-D9A0047E1CB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AA3BBAC-B2B5-4708-A4EC-D9A0047E1CB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AA3BBAC-B2B5-4708-A4EC-D9A0047E1CB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
