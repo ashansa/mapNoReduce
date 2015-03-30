@@ -14,7 +14,7 @@ namespace Server.worker
         {
             IClient client = (IClient)Activator.GetObject(
                 typeof(IClient),
-                "tcp://localhost:10000/Client");
+                Worker.CLIENT_URL);
             WorkerTaskMetadata workerMetadata = client.receiveTaskRequest(splitMetadata);
             return workerMetadata;
         }
@@ -24,7 +24,7 @@ namespace Server.worker
         {
             IClient client = (IClient)Activator.GetObject(
                      typeof(IClient),
-                     "tcp://localhost:10000/Client");
+                    Worker.CLIENT_URL);
             Boolean status = client.receiveCompletedTask(taskResult);
             Console.WriteLine("receive status at client is" + status);
         }
