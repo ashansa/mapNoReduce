@@ -99,6 +99,11 @@ namespace PADIMapNoReduce
             }
         }
 
+        public void receiveJobCompletedNotification()
+        {
+            //TODO: notify UI???
+        }
+
         private string getSplit(long startByte, long endByte)
         {
             /*using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))

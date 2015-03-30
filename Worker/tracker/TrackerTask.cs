@@ -67,5 +67,10 @@ namespace Server.tracker
             }
         }
 
+        public void taskCompleted(int nodeId, int splitId)
+        {
+            TrackerDetails.addCompletedSplit(splitId);
+        }
+
     }
 }

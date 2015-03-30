@@ -19,6 +19,7 @@ namespace PADIMapNoReduce
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
 
+        IClient client;
         //TODO: change this to get from puppet
         WorkerTask workerTask = new WorkerTask(1);
         TrackerTask trackerTask;
@@ -138,8 +139,12 @@ namespace PADIMapNoReduce
             //stop runing worker(WorkerTask) threads
             workerTask.stopWorkerThreads();
 
+            CLIENT_URL = jobMetadata.ClientUrl;
+
+            client = (IClient)Activator.GetObject(typeof(IClient), CLIENT_URL);
+
             //start jobtracker threads
-            TrackerDetails trackerDetails = new TrackerDetails(Constants.CLIENT_URL, existingWorkerMap);
+            TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, existingWorkerMap);
             trackerTask = new TrackerTask(trackerDetails);
 
             trackerTask.splitJob(jobMetadata);
@@ -152,9 +157,13 @@ namespace PADIMapNoReduce
         }
 
         /*will call by worker when job completed   */
-        public void jobCompleted(int nodeId,int splitId)
+        public void taskCompleted(int nodeId,int splitId)
         {
-            Console.WriteLine("job completed");
+            trackerTask.taskCompleted(nodeId, splitId);
+            if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.CompletedTasks.Count)
+            {
+                client.receiveJobCompletedNotification();
+            }
         }
 
         /*will call by worker when result has sent to client*/

@@ -58,7 +58,7 @@ namespace Server.worker
         {
             Console.WriteLine("notifying tracker about job completion");
             IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), Worker.JOBTRACKER_URL);
-            tracker.jobCompleted(workerId, splitId);
+            tracker.taskCompleted(workerId, splitId);
         }
 
         internal void notifyResultsSentToClientEvent(int workerId, int splitId)
