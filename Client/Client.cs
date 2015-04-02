@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Configuration;
+using System.Collections;
 
 namespace PADIMapNoReduce
 {
@@ -17,8 +18,9 @@ namespace PADIMapNoReduce
         private string inputFilePath = "E:\\input\\chathuri.txt";
         private string outputDir = "E:\\input";
         IWorkerTracker contactingWorker;
+        String mapperName;
 
-        static void Main()
+       /* static void Main()
         {
             //call submit method directly
             Console.WriteLine("starting service");
@@ -29,23 +31,43 @@ namespace PADIMapNoReduce
         public Client(string url)
         {
             this.url = url;
-            int clientPort = Int16.Parse(ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_PORT]);
-            TcpChannel channel = new TcpChannel(clientPort);
+            int clientPort = Int16.Parse(ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_URL]);
+            BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
+
+            IDictionary props = new Hashtable();
+            props["port"] = clientPort;
+            props["name"] = "client";
+            props["timeout"] = 10000; // in milliseconds
+            TcpChannel channel = new TcpChannel(props, null, provider);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(this, "Client", typeof(Client));
 
             contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), "tcp://localhost:10001/Worker");
-            /* RemotingConfiguration.RegisterWellKnownServiceType(typeof(Client),
-                 "Client", WellKnownObjectMode.Singleton);*/
+            // RemotingConfiguration.RegisterWellKnownServiceType(typeof(Client),
+               //  "Client", WellKnownObjectMode.Singleton);
+        }
+    */
+
+        public void initClient()
+        {
+            this.url = ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_URL];
+            String[] namePortPair= url.Split(Constants.COLON_STR)[1].Split(Constants.SEP_PIPE);
+            TcpChannel channel = new TcpChannel(Convert.ToInt32(namePortPair[0]));
+            ChannelServices.RegisterChannel(channel, true);
+            RemotingServices.Marshal(this, namePortPair[1], typeof(Client));
+
+           
         }
 
-        public void submitTask(string inputFile, string outputDir, int splits, string mapperFunctionFile)
+        public void submitTask(String entryUrl,string inputFile, string outputDir, int splits, string mapperFunctionName)
         {
             this.inputFilePath = inputFile;
             this.outputDir = outputDir;
+            this.mapperName = mapperFunctionName;
            
             byte[] input = File.ReadAllBytes(inputFilePath);
             JobMetadata jobDetails = new JobMetadata(input.Length, splits, url);
+            contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entryUrl);
             contactingWorker.receiveJobRequest(jobDetails);
 
 
@@ -72,8 +94,7 @@ namespace PADIMapNoReduce
         public WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata)
         {
             /*we need to set the input file part in workerMetadata.chunk*/
-            string mapperName = "Mapper";
-            String inputCode = @"..\..\..\LibMapper\bin\Debug\LibMapper.dll";
+            String inputCode = ConfigurationManager.AppSettings[Constants.APPSET_DLL_PATH].ToString();
             byte[] code = File.ReadAllBytes(inputCode);
             string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
             //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";

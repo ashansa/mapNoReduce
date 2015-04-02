@@ -43,7 +43,7 @@ namespace Puppet_Master
         public void initPuppet(string puppetURL)
         {
             puppetUrl = puppetURL;
-            String[] portNamePair=puppetURL.Split(':')[2].Split('/');
+            String[] portNamePair=puppetURL.Split(Constants.COLON_STR)[2].Split(Constants.SEP_PIPE);
             int port = Convert.ToInt32(portNamePair[0]);
             BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
 

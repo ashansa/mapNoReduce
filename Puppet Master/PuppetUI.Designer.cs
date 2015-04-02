@@ -59,6 +59,7 @@
             client_submit.TabIndex = 5;
             client_submit.Text = "submit";
             client_submit.UseVisualStyleBackColor = true;
+            client_submit.Click += new System.EventHandler(this.client_submit_Click);
             // 
             // txt_workerCreate
             // 

@@ -27,7 +27,10 @@ namespace PADIMapNoReduce
         private void btSubmit_Click(object sender, EventArgs e)
         {
             int splits = Int32.Parse(txSplits.Text);
-           new Client(Constants.CLIENT_URL).submitTask(txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
+            Client client = new Client();
+            client.initClient();
+            client.submitTask("entry url", txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
+          // new Client("tcp://localhost:9443/Client").submitTask(txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
         }
     }
 }

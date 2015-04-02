@@ -27,7 +27,7 @@ namespace Puppet_Master
 
         private WorkerMetadata createMetadataObjFromCommand(string command)
         {
-            String[] splits = command.Split(' ');
+            String[] splits = command.Split(Constants.SPACE_CHAR);
             WorkerMetadata workerMetadata = new WorkerMetadata();
             workerMetadata.WorkerId = Convert.ToInt16(splits[1]);
             workerMetadata.PuppetRUL = splits[2];
@@ -43,6 +43,11 @@ namespace Puppet_Master
         {
             puppet.initPuppet(txt_puppetId.Text);
             init.Enabled = false;
+        }
+
+        private void client_submit_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

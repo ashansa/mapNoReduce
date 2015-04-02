@@ -59,10 +59,10 @@ namespace Server.tracker
             for(int i = 0; i < trackerDetails.FileSplitData.Count; i++) 
             {
                 FileSplitMetadata jobData = trackerDetails.FileSplitData[i];
-                /*TODO: get from list and use remoting to call them
-                KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i);
-                IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);*/
-                IWorker worker = new Worker(10+i);
+              
+                KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i%trackerDetails.ExistingWorkerMap.Count);
+                IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+                //IWorker worker = new Worker(10+i);
                 worker.receiveTask(jobData);
             }
         }

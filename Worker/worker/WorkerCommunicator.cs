@@ -50,7 +50,7 @@ namespace Server.worker
             foreach (KeyValuePair<Int32, string> entry in existingWorkerList)
             {
                IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-               worker.addNewWorker(entry.Key,newWorkerURL);
+               worker.addNewWorker(workerId, newWorkerURL);
            }
         }
 

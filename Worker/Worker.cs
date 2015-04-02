@@ -59,13 +59,13 @@ namespace PADIMapNoReduce
         public void startWorker(String serviceURL)
         {
             /*Workers are listening*/
-            String[] portNamePair = serviceURL.Split(':')[2].Split('/');
+            String[] portNamePair = serviceURL.Split(Constants.COLON_STR)[2].Split(Constants.SEP_PIPE);
             BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
 
             IDictionary props = new Hashtable();
             props["port"] =Convert.ToInt32( portNamePair[0]);
             props["name"] = "worker";
-            props["timeout"] = 1000; // in milliseconds
+            props["timeout"] = 10000; // in milliseconds
             TcpChannel channel = new TcpChannel(props, null, provider);
             ChannelServices.RegisterChannel(channel, true);
 
