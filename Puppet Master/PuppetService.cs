@@ -50,7 +50,7 @@ namespace Puppet_Master
             IDictionary props = new Hashtable();
             props["name"] = "puppet";
             props["port"] = Convert.ToInt32(portNamePair[0]);
-            props["timeout"] = 1000; // in milliseconds
+           // props["timeout"] = 100000; // in milliseconds
             TcpChannel channel = new TcpChannel(props, null, provider);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(this, portNamePair[1], typeof(PuppetService));

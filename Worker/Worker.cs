@@ -65,7 +65,7 @@ namespace PADIMapNoReduce
             IDictionary props = new Hashtable();
             props["port"] =Convert.ToInt32( portNamePair[0]);
             props["name"] = "worker";
-            props["timeout"] = 10000; // in milliseconds
+           // props["timeout"] = 100000; // in milliseconds
             TcpChannel channel = new TcpChannel(props, null, provider);
             ChannelServices.RegisterChannel(channel, true);
 

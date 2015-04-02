@@ -51,7 +51,7 @@ namespace PADIMapNoReduce
         public void initClient()
         {
             this.url = ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_URL];
-            String[] namePortPair= url.Split(Constants.COLON_STR)[1].Split(Constants.SEP_PIPE);
+            String[] namePortPair= url.Split(Constants.COLON_STR)[2].Split(Constants.SEP_PIPE);
             TcpChannel channel = new TcpChannel(Convert.ToInt32(namePortPair[0]));
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(this, namePortPair[1], typeof(Client));
@@ -68,7 +68,7 @@ namespace PADIMapNoReduce
             byte[] input = File.ReadAllBytes(inputFilePath);
             JobMetadata jobDetails = new JobMetadata(input.Length, splits, url);
             contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entryUrl);
-            contactingWorker.receiveJobRequest(jobDetails);
+            contactingWorker.receiveJobRequest(jobDetails);//calling the job tracker
 
 
            /* int length = input.Length;
@@ -96,8 +96,8 @@ namespace PADIMapNoReduce
             /*we need to set the input file part in workerMetadata.chunk*/
             String inputCode = ConfigurationManager.AppSettings[Constants.APPSET_DLL_PATH].ToString();
             byte[] code = File.ReadAllBytes(inputCode);
-            string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
-            //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
+            //string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
+            string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
 
             Console.WriteLine("split ===================> " + workerMetadata.Chunk);

@@ -81,6 +81,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Client\Client.csproj">
+      <Project>{a56eae84-dba3-4a4a-acf1-a46d5830753d}</Project>
+      <Name>Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LibPADIMapNoReduce\LibPADIMapNoReduce.csproj">
       <Project>{2d129022-0922-40c3-9987-17789e3a225f}</Project>
       <Name>LibPADIMapNoReduce</Name>
