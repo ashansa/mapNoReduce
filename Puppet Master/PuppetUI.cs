@@ -33,7 +33,7 @@ namespace Puppet_Master
             workerMetadata.PuppetRUL = splits[2];
             workerMetadata.ServiceURL = splits[3];
 
-            if(splits.Length>5 && splits[4]!=string.Empty)
+            if(splits.Length==5 && splits[4]!=string.Empty)
             workerMetadata.EntryURL = splits[4];
             return workerMetadata;
 
