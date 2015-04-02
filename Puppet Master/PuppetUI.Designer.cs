@@ -41,13 +41,6 @@
             client_submit = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // txt_workerCreate
-            // 
-            this.txt_workerCreate.Location = new System.Drawing.Point(36, 117);
-            this.txt_workerCreate.Name = "txt_workerCreate";
-            this.txt_workerCreate.Size = new System.Drawing.Size(369, 20);
-            this.txt_workerCreate.TabIndex = 1;
-            // 
             // worker_submit
             // 
             worker_submit.Location = new System.Drawing.Point(36, 143);
@@ -58,13 +51,6 @@
             worker_submit.UseVisualStyleBackColor = true;
             worker_submit.Click += new System.EventHandler(this.worker_submit_Click);
             // 
-            // txt_clientCreate
-            // 
-            this.txt_clientCreate.Location = new System.Drawing.Point(36, 205);
-            this.txt_clientCreate.Name = "txt_clientCreate";
-            this.txt_clientCreate.Size = new System.Drawing.Size(369, 20);
-            this.txt_clientCreate.TabIndex = 4;
-            // 
             // client_submit
             // 
             client_submit.Location = new System.Drawing.Point(36, 231);
@@ -73,6 +59,20 @@
             client_submit.TabIndex = 5;
             client_submit.Text = "submit";
             client_submit.UseVisualStyleBackColor = true;
+            // 
+            // txt_workerCreate
+            // 
+            this.txt_workerCreate.Location = new System.Drawing.Point(36, 117);
+            this.txt_workerCreate.Name = "txt_workerCreate";
+            this.txt_workerCreate.Size = new System.Drawing.Size(369, 20);
+            this.txt_workerCreate.TabIndex = 1;
+            // 
+            // txt_clientCreate
+            // 
+            this.txt_clientCreate.Location = new System.Drawing.Point(36, 205);
+            this.txt_clientCreate.Name = "txt_clientCreate";
+            this.txt_clientCreate.Size = new System.Drawing.Size(369, 20);
+            this.txt_clientCreate.TabIndex = 4;
             // 
             // label2
             // 
@@ -95,22 +95,22 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(36, 41);
+            this.label3.Location = new System.Drawing.Point(33, 41);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(53, 13);
+            this.label3.Size = new System.Drawing.Size(63, 13);
             this.label3.TabIndex = 6;
-            this.label3.Text = "Puppet Id";
+            this.label3.Text = "Puppet Port";
             // 
             // txt_puppetId
             // 
-            this.txt_puppetId.Location = new System.Drawing.Point(110, 41);
+            this.txt_puppetId.Location = new System.Drawing.Point(105, 41);
             this.txt_puppetId.Name = "txt_puppetId";
-            this.txt_puppetId.Size = new System.Drawing.Size(151, 20);
+            this.txt_puppetId.Size = new System.Drawing.Size(216, 20);
             this.txt_puppetId.TabIndex = 7;
             // 
             // init
             // 
-            this.init.Location = new System.Drawing.Point(290, 41);
+            this.init.Location = new System.Drawing.Point(341, 39);
             this.init.Name = "init";
             this.init.Size = new System.Drawing.Size(75, 23);
             this.init.TabIndex = 8;
@@ -118,7 +118,7 @@
             this.init.UseVisualStyleBackColor = true;
             this.init.Click += new System.EventHandler(this.init_Click);
             // 
-            // Form1
+            // PuppetUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -132,7 +132,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txt_workerCreate);
             this.Controls.Add(this.label1);
-            this.Name = "Form1";
+            this.Name = "PuppetUI";
             this.Text = "Form1";
             this.ResumeLayout(false);
             this.PerformLayout();

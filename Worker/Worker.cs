@@ -2,6 +2,7 @@
 using Server.tracker;
 using Server.worker;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Remoting;
@@ -14,7 +15,7 @@ namespace PADIMapNoReduce
     /// <summary>
     /// Program class is a container for application entry point Main
     /// </summary>
-    class Worker : MarshalByRefObject, IWorkerTracker
+   public class Worker : MarshalByRefObject, IWorkerTracker
     {
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
@@ -55,13 +56,20 @@ namespace PADIMapNoReduce
         /// </summary>
         /// <param name="args">No required arguments</param>
 
-        public static void Main()
+        public void startWorker(String serviceURL)
         {
             /*Workers are listening*/
-            TcpChannel channel = new TcpChannel(10001);
+            String[] portNamePair = serviceURL.Split(':')[2].Split('/');
+            BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
+
+            IDictionary props = new Hashtable();
+            props["port"] =Convert.ToInt32( portNamePair[0]);
+            props["name"] = "worker";
+            props["timeout"] = 1000; // in milliseconds
+            TcpChannel channel = new TcpChannel(props, null, provider);
             ChannelServices.RegisterChannel(channel, true);
-            Worker worker = new Worker(100);
-            RemotingServices.Marshal(worker, "Worker",typeof(Worker));
+
+            RemotingServices.Marshal(this, portNamePair[1],typeof(Worker));
 
            /* Console.WriteLine("starting tasks");
             FileSplitMetadata splitMetadata = new FileSplitMetadata(1, 4, 8, "clientURL");
@@ -82,13 +90,18 @@ namespace PADIMapNoReduce
             worker.receiveTask(splitMetadata);
 */
             
-            //TODO:either make job tracker or task tracker tasks depending on status
-            Console.WriteLine("worker going to start");
-            worker.startWorkerTasks();//start threads for Worker task
             //TODO: start tasks for jobtracker
             Common.Logger().LogInfo("Worker Started", string.Empty, string.Empty);
             Console.WriteLine("worker started");
-            Console.ReadLine();
+            try
+            {
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Common.Logger().LogInfo("exception thrown in readline", string.Empty, string.Empty);
+            }
+            
         }
 
         public void startWorkerTasks()
@@ -187,6 +200,7 @@ namespace PADIMapNoReduce
 
         public Boolean initWorker(WorkerMetadata workerMetadata)
         {
+            startWorker(workerMetadata.ServiceURL);
             WorkerCommunicator communicator = new WorkerCommunicator();
             this.WorkerId = workerMetadata.WorkerId;
             workerTask = new WorkerTask(WorkerId);
@@ -202,9 +216,8 @@ namespace PADIMapNoReduce
                 existingWorkerMap.Add(workerMetadata.WorkerId,workerMetadata.ServiceURL);//add self
             }
 
-            //TODO: start worker
-            //startWorker();
-            return false;
+            startWorkerTasks();
+            return true;
         }
 
         public void addNewWorker(int nodeId,String newWorkerURL)

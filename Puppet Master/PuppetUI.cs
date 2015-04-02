@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PADIMapNoReduce;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -20,6 +21,21 @@ namespace Puppet_Master
 
         private void worker_submit_Click(object sender, EventArgs e)
         {
+            WorkerMetadata workerMetadata = createMetadataObjFromCommand(txt_workerCreate.Text);
+            puppet.createWorker(workerMetadata);
+        }
+
+        private WorkerMetadata createMetadataObjFromCommand(string command)
+        {
+            String[] splits = command.Split(' ');
+            WorkerMetadata workerMetadata = new WorkerMetadata();
+            workerMetadata.WorkerId = Convert.ToInt16(splits[1]);
+            workerMetadata.PuppetRUL = splits[2];
+            workerMetadata.ServiceURL = splits[3];
+
+            if(splits.Length>5 && splits[4]!=string.Empty)
+            workerMetadata.EntryURL = splits[4];
+            return workerMetadata;
 
         }
 
