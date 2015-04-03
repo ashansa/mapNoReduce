@@ -11,7 +11,8 @@ namespace Puppet_Master
     {
         Client client = null;
         PuppetService puppet = new PuppetService();
-        public void createWorker(string command)
+        
+        private void createWorker(string command)
         {
             String[] splits = command.Split(Constants.SPACE_CHAR);
             WorkerMetadata workerMetadata = new WorkerMetadata();
@@ -24,7 +25,7 @@ namespace Puppet_Master
             puppet.createWorker(workerMetadata);
         }
 
-        public void submitJobToClient(String command)
+        private void submitJobToClient(String command)
         {
             if (client == null)
             {
@@ -33,6 +34,25 @@ namespace Puppet_Master
             }
             String[] pairs = command.Split(Constants.SPACE_CHAR);
             client.submitTask(pairs[1], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5]);
+        }
+
+        public void executeCommand(string command)
+        {
+            string keyword = command.Split(' ')[0].ToLower();
+            switch (keyword)
+            {
+                case "submit":
+                    submitJobToClient(command);
+                    break;
+
+                case "worker":
+                    createWorker(command);
+                    break;
+
+                default:
+                    break;
+                
+            }
         }
 
 

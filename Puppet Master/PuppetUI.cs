@@ -23,7 +23,7 @@ namespace Puppet_Master
 
         private void worker_submit_Click(object sender, EventArgs e)
         {
-            utils.createWorker(txt_workerCreate.Text);          
+            utils.executeCommand(txt_workerCreate.Text);          
         }
 
 
@@ -35,7 +35,7 @@ namespace Puppet_Master
 
         private void client_submit_Click(object sender, EventArgs e)
         {
-            utils.submitJobToClient(txt_clientCreate.Text);
+            utils.executeCommand(txt_clientCreate.Text);
         }
 
         private void btn_View_Status_Click(object sender, EventArgs e)

@@ -167,13 +167,12 @@ namespace PADIMapNoReduce
             fs.Position = 0;
             fs.Seek(startByte, SeekOrigin.Current);
 
-            UnicodeEncoding unicode = new UnicodeEncoding();
             byte[] target = new byte[size+additional];
             fs.Read(target, 0, (int)(endByte+additional  - startByte));
             fs.Close();
             File.WriteAllBytes(outputDir + Path.DirectorySeparatorChar + "test.txt", target);
-            string split = unicode.GetString(target);
-           // string split = System.Text.Encoding.UTF8.GetString(target);
+            //string split = new UnicodeEncoding().GetString(target);
+            string split = System.Text.Encoding.UTF8.GetString(target);
             split = split.Trim();
            
             return split;
