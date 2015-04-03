@@ -12,8 +12,10 @@ namespace PADIMapNoReduce.Entities
         String clientURL;
         String trackerURL;
         List<int> completedSplits = new List<int>();
-        Dictionary<Int32, String> existingWorkerMap = new Dictionary<Int32, string>();
-        Dictionary<Int32, Status> mapTaskDetails = new Dictionary<Int32, Status>();
+        List<int> submittedLists = new List<int>();
+        List<int> allSplits = new List<int>();
+        Dictionary<Int32, String> existingWorkerMap = new Dictionary<Int32, string>();//workerId,url
+        Dictionary<Int32, Status> mapTaskDetails = new Dictionary<Int32, Status>();//splitId,status
         List<FileSplitMetadata> fileSplitData = new List<FileSplitMetadata>();
 
         public Dictionary<Int32, Status> MapTaskDetails
@@ -48,19 +50,23 @@ namespace PADIMapNoReduce.Entities
             get { return fileSplitData; }
         }
 
-        public List<int> CompletedTasks
-        {
-            get { return completedSplits; }
-        }
-
         public void addFileSplit(FileSplitMetadata splitData)
         {
             fileSplitData.Add(splitData);
         }
 
-        public void addCompletedSplit(int splitId)
+        public List<int> resultSentToClientSplits
         {
-            completedSplits.Add(splitId);
+            get { return completedSplits; }
+        }
+
+        public List<int> SubmittedSplits
+        {
+            get { return submittedLists; }
+        }
+        public List<int> AllSplits
+        {
+            get { return allSplits; }
         }
     }
 }

@@ -170,8 +170,7 @@ namespace PADIMapNoReduce
         /*will call by worker when job completed   */
         public void taskCompleted(int nodeId,int splitId)
         {
-            trackerTask.taskCompleted(nodeId, splitId);
-            if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.CompletedTasks.Count)
+            if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
             {
                 client.receiveJobCompletedNotification();
             }
@@ -181,7 +180,7 @@ namespace PADIMapNoReduce
         public void resultSentToClient(int nodeId, int splitId)
         {
             //add split to completed
-
+            trackerTask.resultSentToClient(nodeId, splitId);
 
             //stop tracker threads
 
@@ -223,11 +222,14 @@ namespace PADIMapNoReduce
         {
             if (isJobTracker)
             {
-
+                trackerTask.printStatus(workerId);
             }
             else
             {
-                //Console.WriteLine(
+                if (workerTask != null && workerTask.getMapTask() != null && workerTask.getMapTask().Status != null)
+                {
+                    Console.WriteLine("worker id is " + workerId + " status is" + workerTask.getMapTask().Status.PercentageCompleted + "%");
+                }
             }
         }
 
