@@ -96,8 +96,8 @@ namespace PADIMapNoReduce
             /*we need to set the input file part in workerMetadata.chunk*/
             String inputCode = ConfigurationManager.AppSettings[Constants.APPSET_DLL_PATH].ToString();
             byte[] code = File.ReadAllBytes(inputCode);
-            //string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
-            string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
+            string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
+            //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
 
             Console.WriteLine("split ===================> " + workerMetadata.Chunk);
