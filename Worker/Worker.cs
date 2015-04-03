@@ -22,7 +22,7 @@ namespace PADIMapNoReduce
 
         IClient client;
         //TODO: change this to get from puppet
-        WorkerTask workerTask = new WorkerTask(1);
+        WorkerTask workerTask;
         TrackerTask trackerTask;
         int workerId;
         Dictionary<Int32,String> existingWorkerMap = new Dictionary<Int32,string>();
