@@ -177,7 +177,8 @@ namespace PADIMapNoReduce
             }
 
             fs.Close();
-            string split = System.Text.Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+            File.WriteAllBytes(outputDir + Path.DirectorySeparatorChar +  "test.txt", buffer);
+            string split = System.Text.Encoding.UTF8.GetString(buffer, 0, size);
             return split;
         }
 

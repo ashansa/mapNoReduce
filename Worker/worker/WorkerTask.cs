@@ -55,14 +55,24 @@ namespace Server.worker
 
         public void stopWorkerThreads()
         {
-            splitProcessor.Abort();
-            splitProcessor = null;
+            if (splitProcessor != null)
+            {
+                splitProcessor.Abort();
+                splitProcessor = null;
+            }
 
-            resultSender.Abort();
-            resultSender = null;
+            if (resultSender != null)
+            {
+                resultSender.Abort();
+                resultSender = null;
+            }
 
-            statusUpdateNotificationThread.Abort();
-            statusUpdateNotificationThread = null;
+            if (statusUpdateNotificationThread != null)
+            {
+                statusUpdateNotificationThread.Abort();
+                statusUpdateNotificationThread = null;
+            }
+            
         }
 
         private void sendResults()

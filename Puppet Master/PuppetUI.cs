@@ -14,6 +14,8 @@ namespace Puppet_Master
     public partial class PuppetUI : Form
     {
         PuppetService puppet = new PuppetService();
+        Client client = null;
+
         public PuppetUI()
         {
             InitializeComponent();
@@ -47,8 +49,12 @@ namespace Puppet_Master
 
         private void client_submit_Click(object sender, EventArgs e)
         {
-            Client client = new Client();
-            client.initClient();
+            if (client == null)
+            {
+                client = new Client();
+                client.initClient();
+            }
+            
             String[] pairs = txt_clientCreate.Text.Split(Constants.SPACE_CHAR);
             client.submitTask(pairs[1], pairs[2], pairs[3],Convert.ToInt16( pairs[4]), pairs[5]);
         }

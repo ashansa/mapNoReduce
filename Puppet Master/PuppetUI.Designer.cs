@@ -67,6 +67,7 @@
             this.txt_workerCreate.Name = "txt_workerCreate";
             this.txt_workerCreate.Size = new System.Drawing.Size(369, 20);
             this.txt_workerCreate.TabIndex = 1;
+            this.txt_workerCreate.Text = "Worker 1 tcp://localhost:9443/Puppet tcp://localhost:11000/Worker";
             // 
             // txt_clientCreate
             // 
@@ -74,6 +75,8 @@
             this.txt_clientCreate.Name = "txt_clientCreate";
             this.txt_clientCreate.Size = new System.Drawing.Size(369, 20);
             this.txt_clientCreate.TabIndex = 4;
+            this.txt_clientCreate.Text = "Submit tcp://localhost:11000/Worker C:\\Users\\ashansa\\Documents\\tmp\\input.txt C:\\U" +
+    "sers\\ashansa\\Documents\\tmp\\out 3 Mapper";
             // 
             // label2
             // 
@@ -108,6 +111,7 @@
             this.txt_puppetId.Name = "txt_puppetId";
             this.txt_puppetId.Size = new System.Drawing.Size(216, 20);
             this.txt_puppetId.TabIndex = 7;
+            this.txt_puppetId.Text = "tcp://localhost:9443/Puppet";
             // 
             // init
             // 
