@@ -34,7 +34,7 @@ namespace Server.tracker
                long end = start + totalBytes / splits;
              
                //TODO : give tracker URL dynamically
-              FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, jobMetadata.ClientUrl, "tcp://localhost:10001/Worker");
+              FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, jobMetadata.ClientUrl, Worker.JOBTRACKER_URL);
               trackerDetails.addFileSplit(metadata);
              
                //call worker remote object.receiveTaskReq.
@@ -56,6 +56,8 @@ namespace Server.tracker
             // implement to check the completed status and send jobs
             // TODO: handle when trackerDetails.ExistingWorkerMap.Count = 0
           
+
+
             for(int i = 0; i < trackerDetails.FileSplitData.Count; i++) 
             {
                 FileSplitMetadata jobData = trackerDetails.FileSplitData[i];

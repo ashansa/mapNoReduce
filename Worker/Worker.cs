@@ -26,6 +26,7 @@ namespace PADIMapNoReduce
         TrackerTask trackerTask;
         int workerId;
         Dictionary<Int32,String> existingWorkerMap = new Dictionary<Int32,string>();
+        String serviceUrl;
         bool isJobTracker;
 
         public bool IsJobTracker
@@ -56,10 +57,10 @@ namespace PADIMapNoReduce
         /// </summary>
         /// <param name="args">No required arguments</param>
 
-        public void startWorker(String serviceURL)
+        public void startWorker()
         {
             /*Workers are listening*/
-            String[] portNamePair = serviceURL.Split(Constants.COLON_STR)[2].Split(Constants.SEP_PIPE);
+            String[] portNamePair = serviceUrl.Split(Constants.COLON_STR)[2].Split(Constants.SEP_PIPE);
             BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
 
             IDictionary props = new Hashtable();
@@ -99,7 +100,7 @@ namespace PADIMapNoReduce
             }
             catch (Exception ex)
             {
-                Common.Logger().LogInfo("exception thrown in readline", string.Empty, string.Empty);
+                Common.Logger().LogInfo("exception thrown in readline "+ex.Message, string.Empty, string.Empty);
             }
             
         }
@@ -148,6 +149,7 @@ namespace PADIMapNoReduce
             //now he is a Job Tracker. Implement all job tracker functions upon this
             //Start channel with other workers as Job tracker
 
+            JOBTRACKER_URL = this.serviceUrl;//I set my own as job tracker url
             isJobTracker = true;
             //stop runing worker(WorkerTask) threads
             workerTask.stopWorkerThreads();
@@ -157,7 +159,10 @@ namespace PADIMapNoReduce
             client = (IClient)Activator.GetObject(typeof(IClient), CLIENT_URL);
 
             //start jobtracker threads
-            TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, existingWorkerMap);
+            //remove jobtrackers url from workermap
+            Dictionary<int, String> workerTasksWithoutTracker = existingWorkerMap;
+            workerTasksWithoutTracker.Remove(WorkerId);
+            TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, workerTasksWithoutTracker);
             trackerTask = new TrackerTask(trackerDetails);
 
             trackerTask.splitJob(jobMetadata);
@@ -200,7 +205,8 @@ namespace PADIMapNoReduce
 
         public Boolean initWorker(WorkerMetadata workerMetadata)
         {
-            startWorker(workerMetadata.ServiceURL);
+            this.serviceUrl = workerMetadata.ServiceURL;
+            startWorker();
             WorkerCommunicator communicator = new WorkerCommunicator();
             this.WorkerId = workerMetadata.WorkerId;
             workerTask = new WorkerTask(WorkerId);

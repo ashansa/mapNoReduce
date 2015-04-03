@@ -26,7 +26,7 @@ namespace Server.worker
                      typeof(IClient),
                     Worker.CLIENT_URL);
             Boolean status = client.receiveCompletedTask(taskResult);
-            Console.WriteLine("receive status at client is" + status);
+           // Console.WriteLine("receive status at client is" + status);
         }
 
         public void sendStatusUpdatesToTracker(Status status)
@@ -56,7 +56,7 @@ namespace Server.worker
 
         internal void notifyTaskCompletedEvent(int workerId, int splitId)
         {
-            Console.WriteLine("notifying tracker about job completion");
+            Common.Logger().LogInfo("Notifying task completed event ", string.Empty, string.Empty);
             IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), Worker.JOBTRACKER_URL);
             tracker.taskCompleted(workerId, splitId);
         }

@@ -98,9 +98,9 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(33, 41);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(63, 13);
+            this.label3.Size = new System.Drawing.Size(66, 13);
             this.label3.TabIndex = 6;
-            this.label3.Text = "Puppet Port";
+            this.label3.Text = "Puppet URL";
             // 
             // txt_puppetId
             // 
