@@ -227,7 +227,7 @@ namespace PADIMapNoReduce
             return true;
         }
 
-        void displayStatus()
+        public void displayStatus()
         {
             if (isJobTracker)
             {
@@ -235,7 +235,7 @@ namespace PADIMapNoReduce
             }
             else
             {
-                Console.WriteLine(
+                //Console.WriteLine(
             }
         }
 
