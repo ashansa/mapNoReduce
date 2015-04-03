@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Configuration;
 using System.Collections;
+using System.Text;
 
 namespace PADIMapNoReduce
 {
@@ -127,58 +128,53 @@ namespace PADIMapNoReduce
 
         private string getSplit(long startByte, long endByte)
         {
-            /*using (BinaryReader b = new BinaryReader(File.Open(inputFilePath, FileMode.Open)))
-            {
-                /////TODO... check for line end
-                b.BaseStream.Seek(startByte, SeekOrigin.Begin);
-                byte[] byteSplit = b.ReadBytes(endByte - startByte);
-
-                string split = System.Text.Encoding.UTF8.GetString(byteSplit, 0, byteSplit.Length);
-                return split;
-            }*/
-
-            FileStream fs0 = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
+            FileStream fs = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
 
             //if the startByte is in the middle of line start from next line
             if (startByte != 0)
             {
-                byte[] buf = new byte[2];
-                fs0.Seek(startByte - 1, SeekOrigin.Current);
-                int previous = fs0.ReadByte();
+                fs.Seek(startByte - 1, SeekOrigin.Current);
+                int previous = fs.ReadByte();
                 //if previous is not 10 go forward to next line
                 Console.WriteLine("byte before first byte--->" + previous);
                 int i;
-                while ((i = fs0.ReadByte()) != '\n')
+                while ((i = fs.ReadByte()) != '\n')
                 {
                     startByte++;
                 }
             }
-            fs0.Close();
 
-            FileStream fs = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read);
-
+            fs.Position = 0;
             byte[] buffer = new byte[(endByte - startByte) * 2];
             fs.Seek(startByte, SeekOrigin.Current);
-            int size = fs.Read(buffer, 0, (int)(endByte - startByte));
+            int size = fs.Read(buffer, 0, (int)(endByte- startByte));
             int c;
-
+            int additional = 0;
             //if endByte is in the middle of line, read until the end of line
             while ((c = fs.ReadByte()) != -1)
             {
                 if (c == '\n')
-                {
+                {          
                     break;
                 }
                 else
                 {
-                    size++;
-                    buffer[size] = (byte)c;
+                   additional++;
                 }
             }
 
+
+            fs.Position = 0;
+            fs.Seek(startByte, SeekOrigin.Current);
+
+            UnicodeEncoding unicode = new UnicodeEncoding();
+            byte[] target = new byte[size+additional];
+            fs.Read(target, 0, (int)(endByte+additional  - startByte));
             fs.Close();
-            File.WriteAllBytes(outputDir + Path.DirectorySeparatorChar +  "test.txt", buffer);
-            string split = System.Text.Encoding.UTF8.GetString(buffer, 0, size);
+            File.WriteAllBytes(outputDir + Path.DirectorySeparatorChar + "test.txt", target);
+            string split = unicode.GetString(target);
+            split = split.Trim();
+           
             return split;
         }
 
