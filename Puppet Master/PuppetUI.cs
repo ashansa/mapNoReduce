@@ -13,7 +13,7 @@ namespace Puppet_Master
 {
     public partial class PuppetUI : Form
     {
-        PuppetService puppet = new PuppetService();
+
         Utils utils = new Utils();
 
         public PuppetUI()
@@ -29,7 +29,7 @@ namespace Puppet_Master
 
         private void init_Click(object sender, EventArgs e)
         {
-            puppet.initPuppet(txt_puppetId.Text);
+            utils.initPuppet(txt_puppetId.Text);
             init.Enabled = false;
         }
 

@@ -94,14 +94,6 @@ namespace PADIMapNoReduce
             //TODO: start tasks for jobtracker
             Common.Logger().LogInfo("Worker Started", string.Empty, string.Empty);
             Console.WriteLine("worker started");
-            try
-            {
-                Console.ReadLine();
-            }
-            catch (Exception ex)
-            {
-                Common.Logger().LogInfo("exception thrown in readline "+ex.Message, string.Empty, string.Empty);
-            }
             
         }
 

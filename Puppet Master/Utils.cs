@@ -35,5 +35,10 @@ namespace Puppet_Master
             client.submitTask(pairs[1], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5]);
         }
 
+
+        internal void initPuppet(string puppetUrl)
+        {
+            puppet.initPuppet(puppetUrl);
+        }
     }
 }
