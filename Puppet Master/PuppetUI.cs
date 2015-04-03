@@ -14,7 +14,7 @@ namespace Puppet_Master
     public partial class PuppetUI : Form
     {
         PuppetService puppet = new PuppetService();
-        Client client = null;
+        Utils utils = new Utils();
 
         public PuppetUI()
         {
@@ -23,23 +23,9 @@ namespace Puppet_Master
 
         private void worker_submit_Click(object sender, EventArgs e)
         {
-            WorkerMetadata workerMetadata = createMetadataObjFromCommand(txt_workerCreate.Text);
-            puppet.createWorker(workerMetadata);
+            utils.createWorker(txt_workerCreate.Text);          
         }
 
-        private WorkerMetadata createMetadataObjFromCommand(string command)
-        {
-            String[] splits = command.Split(Constants.SPACE_CHAR);
-            WorkerMetadata workerMetadata = new WorkerMetadata();
-            workerMetadata.WorkerId = Convert.ToInt16(splits[1]);
-            workerMetadata.PuppetRUL = splits[2];
-            workerMetadata.ServiceURL = splits[3];
-
-            if(splits.Length==5 && splits[4]!=string.Empty)
-            workerMetadata.EntryURL = splits[4];
-            return workerMetadata;
-
-        }
 
         private void init_Click(object sender, EventArgs e)
         {
@@ -49,14 +35,7 @@ namespace Puppet_Master
 
         private void client_submit_Click(object sender, EventArgs e)
         {
-            if (client == null)
-            {
-                client = new Client();
-                client.initClient();
-            }
-            
-            String[] pairs = txt_clientCreate.Text.Split(Constants.SPACE_CHAR);
-            client.submitTask(pairs[1], pairs[2], pairs[3],Convert.ToInt16( pairs[4]), pairs[5]);
+            utils.submitJobToClient(txt_clientCreate.Text);
         }
 
         private void btn_View_Status_Click(object sender, EventArgs e)

@@ -227,6 +227,19 @@ namespace PADIMapNoReduce
             return true;
         }
 
+        void displayStatus()
+        {
+            if (isJobTracker)
+            {
+
+            }
+            else
+            {
+                Console.WriteLine(
+            }
+        }
+
+
         public void addNewWorker(int nodeId,String newWorkerURL)
         {
             existingWorkerMap.Add(nodeId, newWorkerURL);
