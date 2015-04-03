@@ -39,6 +39,7 @@
             this.init = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.btn_View_Status = new System.Windows.Forms.Button();
             worker_submit = new System.Windows.Forms.Button();
             client_submit = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -67,7 +68,7 @@
             // 
             this.txt_workerCreate.Location = new System.Drawing.Point(36, 117);
             this.txt_workerCreate.Name = "txt_workerCreate";
-            this.txt_workerCreate.Size = new System.Drawing.Size(369, 20);
+            this.txt_workerCreate.Size = new System.Drawing.Size(390, 20);
             this.txt_workerCreate.TabIndex = 1;
             this.txt_workerCreate.Text = "Worker 1 tcp://localhost:9443/Puppet tcp://localhost:11000/Worker";
             // 
@@ -75,10 +76,9 @@
             // 
             this.txt_clientCreate.Location = new System.Drawing.Point(36, 205);
             this.txt_clientCreate.Name = "txt_clientCreate";
-            this.txt_clientCreate.Size = new System.Drawing.Size(369, 20);
+            this.txt_clientCreate.Size = new System.Drawing.Size(390, 20);
             this.txt_clientCreate.TabIndex = 4;
-            this.txt_clientCreate.Text = "Submit tcp://localhost:11000/Worker C:\\Users\\ashansa\\Documents\\tmp\\input.txt C:\\U" +
-    "sers\\ashansa\\Documents\\tmp\\out 3 Mapper";
+            this.txt_clientCreate.Text = "Submit tcp://localhost:11000/Worker E:\\input\\chathuri.txt E:\\input 3 Mapper";
             // 
             // label2
             // 
@@ -101,7 +101,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(33, 41);
+            this.label3.Location = new System.Drawing.Point(33, 36);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(66, 13);
             this.label3.TabIndex = 6;
@@ -109,7 +109,7 @@
             // 
             // txt_puppetId
             // 
-            this.txt_puppetId.Location = new System.Drawing.Point(105, 41);
+            this.txt_puppetId.Location = new System.Drawing.Point(105, 35);
             this.txt_puppetId.Name = "txt_puppetId";
             this.txt_puppetId.Size = new System.Drawing.Size(216, 20);
             this.txt_puppetId.TabIndex = 7;
@@ -117,7 +117,7 @@
             // 
             // init
             // 
-            this.init.Location = new System.Drawing.Point(341, 39);
+            this.init.Location = new System.Drawing.Point(341, 34);
             this.init.Name = "init";
             this.init.Size = new System.Drawing.Size(75, 23);
             this.init.TabIndex = 8;
@@ -135,18 +135,29 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(12, 296);
+            this.textBox1.Location = new System.Drawing.Point(168, 148);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(413, 20);
+            this.textBox1.Size = new System.Drawing.Size(400, 20);
             this.textBox1.TabIndex = 10;
             this.textBox1.Text = "Worker 2 tcp://localhost:9450/Puppet tcp://localhost:11100/Worker tcp://localhost" +
     ":11000/Worker";
+            // 
+            // btn_View_Status
+            // 
+            this.btn_View_Status.Location = new System.Drawing.Point(36, 285);
+            this.btn_View_Status.Name = "btn_View_Status";
+            this.btn_View_Status.Size = new System.Drawing.Size(96, 23);
+            this.btn_View_Status.TabIndex = 11;
+            this.btn_View_Status.Text = "View Job Status";
+            this.btn_View_Status.UseVisualStyleBackColor = true;
+            this.btn_View_Status.Click += new System.EventHandler(this.btn_View_Status_Click);
             // 
             // PuppetUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(428, 386);
+            this.ClientSize = new System.Drawing.Size(657, 521);
+            this.Controls.Add(this.btn_View_Status);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.init);
@@ -176,6 +187,7 @@
         private System.Windows.Forms.Button init;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button btn_View_Status;
     }
 }
 

@@ -65,7 +65,7 @@ namespace Server.worker
             return false;
         }
 
-        internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata, FileSplitMetadata splitMetaData)
+        internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata, FileSplitMetadata splitMetaData,int workerId)
         {
             String chunk = workerTaskMetadata.Chunk;
             long lineNumber = splitMetaData.StartPosition;
@@ -84,7 +84,7 @@ namespace Server.worker
                             runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, lineNumber++, line);
 
                             linesProcessed++;
-                            setTaskStatus(splitMetaData, linesProcessed);
+                            setTaskStatus(splitMetaData, linesProcessed,workerId);
                         }
                         else
                         {
@@ -105,7 +105,7 @@ namespace Server.worker
             }
         }
 
-        private void setTaskStatus(FileSplitMetadata splitMetaData, long linesProcessed)
+        private void setTaskStatus(FileSplitMetadata splitMetaData, long linesProcessed,int workerId)
         {
             long totalLines = splitMetaData.EndPosition - splitMetaData.StartPosition;
             double percentage = 100 * (linesProcessed / (double)totalLines);
@@ -113,6 +113,8 @@ namespace Server.worker
             int newfactor = (int)percentage / 10;
 
             status.PercentageCompleted = percentage;
+            status.SplitId = splitMetaData.SplitId;
+            status.NodeId = workerId;
 
             lock (status)
             {

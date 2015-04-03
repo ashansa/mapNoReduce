@@ -10,11 +10,17 @@ namespace PADIMapNoReduce.Entities
    public class TrackerDetails
     {
         String clientURL;
+        String trackerURL;
         List<int> completedSplits = new List<int>();
         Dictionary<Int32, String> existingWorkerMap = new Dictionary<Int32, string>();
-        Dictionary<Int16, Status> mapTaskDetails = new Dictionary<Int16, Status>();
+        Dictionary<Int32, Status> mapTaskDetails = new Dictionary<Int32, Status>();
         List<FileSplitMetadata> fileSplitData = new List<FileSplitMetadata>();
 
+        public Dictionary<Int32, Status> MapTaskDetails
+        {
+            get { return mapTaskDetails; }
+            set { mapTaskDetails = value; }
+        }
         public TrackerDetails(string clientURL, Dictionary<Int32, String> workerMap)
         {
             this.clientURL = clientURL;

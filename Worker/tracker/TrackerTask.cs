@@ -74,5 +74,10 @@ namespace Server.tracker
             TrackerDetails.addCompletedSplit(splitId);
         }
 
+
+        internal void updateStatus(Status status)
+        {
+            trackerDetails.MapTaskDetails.Add(status.SplitId, status);
+        }
     }
 }

@@ -58,5 +58,10 @@ namespace Puppet_Master
             String[] pairs = txt_clientCreate.Text.Split(Constants.SPACE_CHAR);
             client.submitTask(pairs[1], pairs[2], pairs[3],Convert.ToInt16( pairs[4]), pairs[5]);
         }
+
+        private void btn_View_Status_Click(object sender, EventArgs e)
+        {
+            //call the client, 
+        }
     }
 }

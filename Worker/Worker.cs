@@ -144,7 +144,6 @@ namespace PADIMapNoReduce
         #region JobTracker
         public void receiveJobRequest(JobMetadata jobMetadata)
         {
-            Console.WriteLine("Job request received");
             Common.Logger().LogInfo("Job Request received", string.Empty, string.Empty);
             //now he is a Job Tracker. Implement all job tracker functions upon this
             //Start channel with other workers as Job tracker
@@ -172,6 +171,8 @@ namespace PADIMapNoReduce
         public void receiveStatus(Status status)
         {
             Console.WriteLine("result received " + status.PercentageCompleted + "%");
+            Common.Logger().LogInfo("Results received " + status.PercentageCompleted + "%", string.Empty, string.Empty);
+            trackerTask.updateStatus(status);
         }
 
         /*will call by worker when job completed   */
