@@ -40,7 +40,7 @@ namespace Puppet_Master
 
         private void btn_View_Status_Click(object sender, EventArgs e)
         {
-            //call the client, 
+            utils.executeCommand("status");
         }
     }
 }

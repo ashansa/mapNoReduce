@@ -18,7 +18,14 @@ namespace Puppet_Master
     class PuppetService : MarshalByRefObject, IPuppetMaster
     {
         String puppetUrl;
+        Worker worker;
+        List<String> otherPuppetUrls = new List<string>();
 
+        public List<String> OtherPuppetUrls
+        {
+            get { return otherPuppetUrls; }
+            set { otherPuppetUrls = value; }
+        }
         public String PuppetUrl
         {
             get { return puppetUrl; }
@@ -30,11 +37,19 @@ namespace Puppet_Master
          
             new Thread(delegate()
             {
-                Worker worker = new Worker(workerMetadata.WorkerId);
+               worker = new Worker(workerMetadata.WorkerId);
                 worker.initWorker(workerMetadata);
             }).Start();
            // worker.initWorker(workerMetadata);
             return true;
+        }
+
+       public void displayStatus()
+        {
+            new Thread(delegate()
+            {
+                worker.displayStatus();
+            });
         }
         #endregion
 
@@ -69,6 +84,20 @@ namespace Puppet_Master
             puppet.createLocalWorker(workerMetadata);
             }
         }
+
+        internal void callPuppetsDisplayStatus()
+        {
+            displayStatus();//display status on local node
+
+            for (int i = 0; i < otherPuppetUrls.Count; i++)
+            {
+                IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
+                 typeof(IPuppetMaster),
+               otherPuppetUrls[i]);
+                puppet.displayStatus();//display status on remote nodes
+            }
+        }
+
         #endregion
     }
 }

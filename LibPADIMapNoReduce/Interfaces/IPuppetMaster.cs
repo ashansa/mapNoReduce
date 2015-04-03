@@ -8,5 +8,6 @@ namespace PADIMapNoReduce.Interfaces
    public interface IPuppetMaster
     {
        bool createLocalWorker(WorkerMetadata workerMetadata);
+       void displayStatus();
     }
 }

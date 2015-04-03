@@ -1,6 +1,7 @@
 ﻿using PADIMapNoReduce;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,16 +50,30 @@ namespace Puppet_Master
                     createWorker(command);
                     break;
 
+                case "status":
+                    callDisplayStatus();
+                    break;
                 default:
                     break;
                 
             }
         }
 
+        private void callDisplayStatus()
+        {
+            puppet.callPuppetsDisplayStatus();
+        }
+
 
         internal void initPuppet(string puppetUrl)
         {
-            puppet.initPuppet(puppetUrl);
+            String puppetsStr= ConfigurationManager.AppSettings[Constants.APPSETT_PUPPETS_URL].ToString();
+            String[] puppets = puppetsStr.Split(';');
+            for (int i = 1; i < puppets.Length; i++)//i==0 is myself
+            {
+                puppet.OtherPuppetUrls.Add(puppets[i]);
+            }
+            puppet.initPuppet(puppetUrl);//later we will change it go take from puppetStr
         }
     }
 }
