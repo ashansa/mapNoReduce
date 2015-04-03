@@ -15,8 +15,8 @@ namespace PADIMapNoReduce
     public class Client : MarshalByRefObject, IClient
     {
         string url;
-        private string inputFilePath = "E:\\input\\chathuri.txt";
-        private string outputDir = "E:\\input";
+        private string inputFilePath;
+        private string outputDir;
         IWorkerTracker contactingWorker;
         String mapperName;
 
