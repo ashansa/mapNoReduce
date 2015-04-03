@@ -184,10 +184,13 @@ namespace PADIMapNoReduce
 
             //stop tracker threads
 
-
-            //resume worker threads
-            workerTask = new WorkerTask(nodeId);
-            workerTask.startWorkerThreads();
+            //FIXME  !!!!!!!!!!!!! AM I CORRECT?
+            //resume worker threads, should happen when all results are sent
+            if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
+            {
+                workerTask = new WorkerTask(nodeId);
+                workerTask.startWorkerThreads();
+            }
         }
 
         #endregion
