@@ -37,6 +37,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.txt_puppetId = new System.Windows.Forms.TextBox();
             this.init = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             worker_submit = new System.Windows.Forms.Button();
             client_submit = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -123,11 +125,30 @@
             this.init.UseVisualStyleBackColor = true;
             this.init.Click += new System.EventHandler(this.init_Click);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(139, 148);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(0, 13);
+            this.label4.TabIndex = 9;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(12, 296);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(413, 20);
+            this.textBox1.TabIndex = 10;
+            this.textBox1.Text = "Worker 2 tcp://localhost:9450/Puppet tcp://localhost:11100/Worker tcp://localhost" +
+    ":11000/Worker";
+            // 
             // PuppetUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(428, 386);
+            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.init);
             this.Controls.Add(this.txt_puppetId);
             this.Controls.Add(this.label3);
@@ -153,6 +174,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txt_puppetId;
         private System.Windows.Forms.Button init;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }
 
