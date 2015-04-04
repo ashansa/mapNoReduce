@@ -63,8 +63,8 @@ namespace Server.worker
 
         internal void notifyResultsSentToClientEvent(int workerId, int splitId)
         {
-            //IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-            //tracker.resultSentToClient(workerId, splitId);
+            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), Worker.JOBTRACKER_URL);
+            tracker.resultSentToClient(workerId, splitId);
         }
     }
 }

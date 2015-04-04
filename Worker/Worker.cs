@@ -72,25 +72,6 @@ namespace PADIMapNoReduce
 
             RemotingServices.Marshal(this, portNamePair[1],typeof(Worker));
 
-           /* Console.WriteLine("starting tasks");
-            FileSplitMetadata splitMetadata = new FileSplitMetadata(1, 4, 8, "clientURL");
-            splitMetadata.SplitId = 1;
-            splitMetadata.StartPosition = 4;
-            splitMetadata.EndPosition = 8;
-
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-            Thread.Sleep(5000);
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-            worker.receiveTask(splitMetadata);
-*/
-            
             //TODO: start tasks for jobtracker
             Common.Logger().LogInfo("Worker Started", string.Empty, string.Empty);
             Console.WriteLine("worker started");
@@ -167,7 +148,8 @@ namespace PADIMapNoReduce
             trackerTask.updateStatus(status);
         }
 
-        /*will call by worker when job completed   */
+        /*will call by worker when job completed, but still results may not sent */
+       /*FIXME Do we really need this??  */
         public void taskCompleted(int nodeId,int splitId)
         {
             if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
