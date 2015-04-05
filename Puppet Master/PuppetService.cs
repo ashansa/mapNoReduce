@@ -19,12 +19,12 @@ namespace Puppet_Master
     {
         String puppetUrl;
         Worker worker;
-        List<String> otherPuppetUrls = new List<string>();
+        List<String> puppetUrlList = new List<string>();
 
-        public List<String> OtherPuppetUrls
+        public List<String> PuppetUrlList
         {
-            get { return otherPuppetUrls; }
-            set { otherPuppetUrls = value; }
+            get { return puppetUrlList; }
+            set { puppetUrlList = value; }
         }
         public String PuppetUrl
         {
@@ -89,11 +89,11 @@ namespace Puppet_Master
         {
             displayStatus();//display status on local node
 
-            for (int i = 0; i < otherPuppetUrls.Count; i++)
+            for (int i = 0; i < puppetUrlList.Count; i++)
             {
                 IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
                  typeof(IPuppetMaster),
-               otherPuppetUrls[i]);
+               puppetUrlList[i]);
                 puppet.displayStatus();//display status on remote nodes
             }
         }

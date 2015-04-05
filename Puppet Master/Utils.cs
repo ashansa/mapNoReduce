@@ -69,9 +69,9 @@ namespace Puppet_Master
         {
             String puppetsStr= ConfigurationManager.AppSettings[Constants.APPSETT_PUPPETS_URL].ToString();
             String[] puppets = puppetsStr.Split(';');
-            for (int i = 1; i < puppets.Length; i++)//i==0 is myself
+            for (int i = 0; i < puppets.Length; i++)//i==0 is myself
             {
-                puppet.OtherPuppetUrls.Add(puppets[i]);
+                puppet.PuppetUrlList.Add(puppets[i]);
             }
             puppet.initPuppet(puppetUrl);//later we will change it go take from puppetStr
         }
