@@ -123,18 +123,13 @@ namespace PADIMapNoReduce
 
             JOBTRACKER_URL = this.serviceUrl;//I set my own as job tracker url
             isJobTracker = true;
-            //stop runing worker(WorkerTask) threads
-            workerTask.stopWorkerThreads();
 
             CLIENT_URL = jobMetadata.ClientUrl;
 
             client = (IClient)Activator.GetObject(typeof(IClient), CLIENT_URL);
 
             //start jobtracker threads
-            //remove jobtrackers url from workermap
-            Dictionary<int, String> workerTasksWithoutTracker = existingWorkerMap;
-            workerTasksWithoutTracker.Remove(WorkerId);
-            TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, workerTasksWithoutTracker);
+            TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, existingWorkerMap);
             trackerTask = new TrackerTask(trackerDetails);
 
             trackerTask.splitJob(jobMetadata);
@@ -164,15 +159,13 @@ namespace PADIMapNoReduce
             //add split to completed
             trackerTask.resultSentToClient(nodeId, splitId);
 
-            //stop tracker threads
-
-            //FIXME  !!!!!!!!!!!!! AM I CORRECT?
+            //FIXME  !!!!!!!!!!!!! AM I CORRECT? MAY BE NEEDED LATER!NOW JOB TRACKER IS BOTH
             //resume worker threads, should happen when all results are sent
-            if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
+          /*  if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
             {
                 workerTask = new WorkerTask(nodeId);
                 workerTask.startWorkerThreads();
-            }
+            }*/
         }
 
         #endregion
