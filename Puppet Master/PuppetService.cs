@@ -18,7 +18,7 @@ namespace Puppet_Master
     class PuppetService : MarshalByRefObject, IPuppetMaster
     {
         String puppetUrl;
-        Worker worker;
+        static Worker worker;
         List<String> puppetUrlList = new List<string>();
 
         public List<String> PuppetUrlList
@@ -34,10 +34,9 @@ namespace Puppet_Master
         #region interface implementation
         public bool createLocalWorker(WorkerMetadata workerMetadata)
         {
-         
+            worker = new Worker(workerMetadata.WorkerId);
             new Thread(delegate()
             {
-               worker = new Worker(workerMetadata.WorkerId);
                 worker.initWorker(workerMetadata);
             }).Start();
            // worker.initWorker(workerMetadata);
@@ -49,7 +48,7 @@ namespace Puppet_Master
             new Thread(delegate()
             {
                 worker.displayStatus();
-            });
+            }).Start();
         }
         #endregion
 
@@ -98,6 +97,12 @@ namespace Puppet_Master
             }
         }
 
+        #endregion
+        #region specific
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
         #endregion
     }
 }

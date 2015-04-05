@@ -57,8 +57,6 @@ namespace Server.tracker
             // implement to check the completed status and send jobs
             // TODO: handle when trackerDetails.ExistingWorkerMap.Count = 0
 
-
-
             for (int i = 0; i < trackerDetails.FileSplitData.Count; i++)
             {
                 FileSplitMetadata jobData = trackerDetails.FileSplitData[i];
@@ -68,7 +66,18 @@ namespace Server.tracker
                 //IWorker worker = new Worker(10+i);
                 worker.receiveTask(jobData);
                 trackerDetails.SubmittedSplits.Add(jobData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
+                Status status=createStartingStatusObject(jobData.SplitId,entry.Key);
+                trackerDetails.MapTaskDetails.Add(jobData.SplitId, status);
             }
+        }
+
+        private Status createStartingStatusObject(int splitId,int nodeId)
+        {
+            Status status = new Status();
+            status.SplitId = splitId;
+            status.NodeId = nodeId;
+            status.PercentageCompleted = 0;
+            return status;
         }
 
         public void resultSentToClient(int nodeId, int splitId)

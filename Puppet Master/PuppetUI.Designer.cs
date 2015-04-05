@@ -40,6 +40,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.btn_View_Status = new System.Windows.Forms.Button();
+            this.textBox2 = new System.Windows.Forms.TextBox();
             worker_submit = new System.Windows.Forms.Button();
             client_submit = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -152,11 +153,21 @@
             this.btn_View_Status.UseVisualStyleBackColor = true;
             this.btn_View_Status.Click += new System.EventHandler(this.btn_View_Status_Click);
             // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(168, 179);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(400, 20);
+            this.textBox2.TabIndex = 12;
+            this.textBox2.Text = "Worker 3 tcp://localhost:9460/Puppet tcp://localhost:11500/Worker tcp://localhost" +
+    ":11000/Worker";
+            // 
             // PuppetUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(657, 521);
+            this.Controls.Add(this.textBox2);
             this.Controls.Add(this.btn_View_Status);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label4);
@@ -188,6 +199,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button btn_View_Status;
+        private System.Windows.Forms.TextBox textBox2;
     }
 }
 

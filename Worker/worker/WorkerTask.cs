@@ -125,14 +125,24 @@ namespace Server.worker
         }
         private void sendStatusUpdates()
         {
+            Status status;
             while (true)
             {
-                lock (mapTask.Status)
+                lock (mapTask.StatusList)
                 {
-                    Monitor.Wait(mapTask.Status);
+                    if (mapTask.StatusList.Count > 0)
+                    {
+                        status = mapTask.StatusList[0];
+                        mapTask.StatusList.RemoveAt(0);
+                    }
+                    else
+                    {
+                        Monitor.Wait(mapTask.StatusList);
+                        continue;
+                    }
                 }
                 WorkerCommunicator communicator = new WorkerCommunicator();
-                communicator.sendStatusUpdatesToTracker(mapTask.Status);
+                communicator.sendStatusUpdatesToTracker(status);
             }
         }
 

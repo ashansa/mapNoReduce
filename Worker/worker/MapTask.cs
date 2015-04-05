@@ -12,8 +12,16 @@ namespace Server.worker
 {
     public class MapTask
     {
-        private Status status = new Status();
+        private List<Status> statusList = new List<Status>();//to send status updates to tracker
         int splitId;
+        static Boolean requiredStatusSend = false;
+        Status currentStatus = new Status();//to keep track of local current status
+
+        public Status CurrentStatus
+        {
+            get { return currentStatus; }
+            set { currentStatus = value; }
+        }
 
         public int SplitId
         {
@@ -28,14 +36,14 @@ namespace Server.worker
             set { isMapSuspended = value; }
         }
 
-        public Status Status
+        public List<Status> StatusList
         {
-            get { return status; }
-            set { status = value; }
+            get { return statusList; }
         }
+    
         List<KeyValuePair<string, string>> result;
 
-        public bool runMapperForLine(byte[] code, string className, long lineNumber, String line)
+        public bool runMapperForLine(byte[] code, string className, String line)
         {
             Assembly assembly = Assembly.Load(code);
             // Walk through each type in the assembly looking for our class
@@ -68,8 +76,9 @@ namespace Server.worker
         internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata, FileSplitMetadata splitMetaData,int workerId)
         {
             String chunk = workerTaskMetadata.Chunk;
-            long lineNumber = splitMetaData.StartPosition;
-            long linesProcessed = 0;
+            //long lineNumber = splitMetaData.StartPosition;
+            long bytesProcessed = 0;
+            long totalSize = chunk.Length * sizeof(Char);
             string line;
             result = new List<KeyValuePair<string, string>>();
             using (StringReader reader = new System.IO.StringReader(chunk))
@@ -79,18 +88,17 @@ namespace Server.worker
                     line = reader.ReadLine();
                     if (line != null)
                     {
-                        if (!isMapSuspended)
+                        if (!IsMapSuspended)
                         {
-                            runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, lineNumber++, line);
-
-                            linesProcessed++;
-                            setTaskStatus(splitMetaData, linesProcessed,workerId);
+                            runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, line);
+                            bytesProcessed += line.Length * sizeof(char)+(Environment.NewLine.Length*sizeof(Char));
+                            setTaskStatus(splitMetaData,totalSize, bytesProcessed,workerId);
                         }
                         else
                         {
                             //clear the results and wait for next map
                             result = new List<KeyValuePair<string, string>>();
-                            isMapSuspended = false;
+                            IsMapSuspended = false;
                         }
                     }
                     else
@@ -98,29 +106,32 @@ namespace Server.worker
                         break;
                     }
                 }
-                Console.WriteLine("total sequences" + lineNumber);
+                //Console.WriteLine("total sequences" + lineNumber);
                 ////send complete status
 
                 return createTaskResultBoject(splitMetaData.SplitId);
             }
         }
 
-        private void setTaskStatus(FileSplitMetadata splitMetaData, long linesProcessed,int workerId)
+        private void setTaskStatus(FileSplitMetadata splitMetaData,long totalSize, long bytesProcessed,int workerId)
         {
-            long totalLines = splitMetaData.EndPosition - splitMetaData.StartPosition;
-            double percentage = 100 * (linesProcessed / (double)totalLines);
-            int oldfactor = (int)status.PercentageCompleted / 10;
+            double percentage = 100 * (bytesProcessed / (double)totalSize);
+            Status statusToSet = new Status();
+            int oldfactor = (int)currentStatus.PercentageCompleted / 10;
             int newfactor = (int)percentage / 10;
 
-            status.PercentageCompleted = percentage;
-            status.SplitId = splitMetaData.SplitId;
-            status.NodeId = workerId;
-
-            lock (status)
+            statusToSet.PercentageCompleted = percentage;
+            statusToSet.SplitId = splitMetaData.SplitId;
+            statusToSet.NodeId = workerId;
+            CurrentStatus = statusToSet;
+            lock (StatusList)
             {
                 if (newfactor > oldfactor)//send for each 10% percentage
                 {
-                    Monitor.Pulse(status);
+                    StatusList.Add(statusToSet);
+
+                    if (StatusList.Count == 1)
+                        Monitor.Pulse(StatusList);          
                 }
             }
 

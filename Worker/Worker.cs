@@ -202,13 +202,11 @@ namespace PADIMapNoReduce
             {
                 trackerTask.printStatus(workerId);
             }
-            else
-            {
-                if (workerTask != null && workerTask.getMapTask() != null && workerTask.getMapTask().Status != null)
+                Status status=workerTask.getMapTask().CurrentStatus;
+                if (workerTask != null && workerTask.getMapTask() != null && status!=null)
                 {
-                    Console.WriteLine("worker id is " + workerId + " status is" + workerTask.getMapTask().Status.PercentageCompleted + "%");
+                    Console.WriteLine("worker id is " + workerId +" Split id is "+status.SplitId+ " status is" +status.PercentageCompleted+ "%");
                 }
-            }
         }
 
 
