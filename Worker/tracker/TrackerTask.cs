@@ -22,6 +22,7 @@ namespace Server.tracker
             set { trackerDetails = value; }
         }
 
+
         public void splitJob(JobMetadata jobMetadata)
         {
             Console.WriteLine("splitting job");
@@ -36,7 +37,7 @@ namespace Server.tracker
                 //TODO : give tracker URL dynamically
                 FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, jobMetadata.ClientUrl, Worker.JOBTRACKER_URL);
                 trackerDetails.addFileSplit(metadata);
-                trackerDetails.AllSplits.Add(i);
+                upsertAllSplits(i);
 
                 //call worker remote object.receiveTaskReq.
                 /* WorkerTaskMetadata workerData = receiveTaskRequest(metadata);
@@ -65,13 +66,16 @@ namespace Server.tracker
                 IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
                 //IWorker worker = new Worker(10+i);
                 worker.receiveTask(jobData);
-                trackerDetails.SubmittedSplits.Add(jobData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
-                Status status=createStartingStatusObject(jobData.SplitId,entry.Key);
-                trackerDetails.MapTaskDetails.Add(jobData.SplitId, status);
+
+                upsertSubmittedSplits(jobData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
+
+                Status status = createStartingStatusObject(jobData.SplitId, entry.Key);
+
+                upsertMapTaskDetails(status);
             }
         }
 
-        private Status createStartingStatusObject(int splitId,int nodeId)
+        private Status createStartingStatusObject(int splitId, int nodeId)
         {
             Status status = new Status();
             status.SplitId = splitId;
@@ -82,17 +86,45 @@ namespace Server.tracker
 
         public void resultSentToClient(int nodeId, int splitId)
         {
-            trackerDetails.resultSentToClientSplits.Add(splitId);
+            lock (trackerDetails)
+            {
+                trackerDetails.resultSentToClientSplits.Add(splitId);
+            }
         }
 
 
         internal void updateStatus(Status status)
         {
-            if (TrackerDetails.MapTaskDetails.ContainsKey(status.SplitId))
+            upsertMapTaskDetails(status);
+        }
+
+        private void upsertMapTaskDetails(Status status)
+        {
+            lock (trackerDetails.MapTaskDetails)
             {
-                trackerDetails.MapTaskDetails.Remove(status.SplitId);
+                if (TrackerDetails.MapTaskDetails.ContainsKey(status.SplitId))
+                {
+                    trackerDetails.MapTaskDetails.Remove(status.SplitId);
+                }
+                trackerDetails.MapTaskDetails.Add(status.SplitId, status);
             }
-            trackerDetails.MapTaskDetails.Add(status.SplitId, status);
+        }
+
+        private void upsertSubmittedSplits(int splitId)
+        {
+            lock (trackerDetails.SubmittedSplits)
+            {
+                if (!trackerDetails.SubmittedSplits.Contains(splitId))
+                    trackerDetails.SubmittedSplits.Add(splitId);
+            }
+        }
+        private void upsertAllSplits(int splitId)
+        {
+            lock (trackerDetails.AllSplits)
+            {
+                if (!trackerDetails.AllSplits.Contains(splitId))
+                    trackerDetails.AllSplits.Add(splitId);
+            }
         }
 
         internal void printStatus(int trackerId)
@@ -107,7 +139,7 @@ namespace Server.tracker
                     sb.Append("Splits which result sent to client are.... \r\n");
                     foreach (int id in trackerDetails.resultSentToClientSplits)
                     {
-                        sb.Append("split is" + id + "node id is "+ trackerDetails.MapTaskDetails[id].NodeId+ "\r\n");
+                        sb.Append("split is" + id + "node id is " + trackerDetails.MapTaskDetails[id].NodeId + "\r\n");
                     }
                     Console.WriteLine(sb.ToString());
                 }
@@ -119,13 +151,13 @@ namespace Server.tracker
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.Append("runing task details are.....\r\n");
-                    foreach (KeyValuePair<int,Status> pair in trackerDetails.MapTaskDetails)
+                    foreach (KeyValuePair<int, Status> pair in trackerDetails.MapTaskDetails)
                     {
                         if (!trackerDetails.resultSentToClientSplits.Contains(pair.Key))
                         {
                             sb.Append("split id " + pair.Key + "worker id " + pair.Value.NodeId + " percentage completed " + pair.Value.PercentageCompleted + "%\r\n");
                         }
-                        }
+                    }
                     Console.WriteLine(sb.ToString());
                 }
             }
