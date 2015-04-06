@@ -16,7 +16,13 @@ namespace Server.worker
         int splitId;
         static Boolean requiredStatusSend = false;
         Status currentStatus = new Status();//to keep track of local current status
-        public static Boolean hasthresholdreached = false;
+        Boolean hasthresholdreached = false;
+
+        public Boolean Hasthresholdreached
+        {
+            get { return hasthresholdreached; }
+            set { hasthresholdreached = value; }
+        }
 
         public Status CurrentStatus
         {
@@ -125,6 +131,14 @@ namespace Server.worker
             statusToSet.SplitId = splitMetaData.SplitId;
             statusToSet.NodeId = workerId;
             CurrentStatus = statusToSet;
+
+            if (!hasthresholdreached)
+            {
+                hasthresholdreached = true;
+                WorkerCommunicator communicator = new WorkerCommunicator();
+                communicator.hasThresholdReached(workerId);
+            }
+
             lock (StatusList)
             {
                 if (newfactor > oldfactor)//send for each 10% percentage

@@ -156,7 +156,6 @@ namespace PADIMapNoReduce
 
         public void readyForNewTask(int nodeId)
         {
-
             trackerTask.readyForNewTask(nodeId);
         }
 

@@ -118,7 +118,7 @@ namespace Server.worker
                 WorkerCommunicator communicator = new WorkerCommunicator();
                 WorkerTaskMetadata workerTaskMetadata = communicator.getTaskFromClient(fileSplitMetadata);
                 mapTask.SplitId = fileSplitMetadata.SplitId;
-                //mapTask.
+                mapTask.Hasthresholdreached = false;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata,workerId);
                 //communicator.notifyTaskCompletedEvent(workerId,fileSplitMetadata.SplitId);
                 addTaskToTaskResults(taskResult);

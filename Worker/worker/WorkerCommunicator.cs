@@ -66,5 +66,11 @@ namespace Server.worker
             IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), Worker.JOBTRACKER_URL);
             tracker.taskCompleted(workerId, splitId);
         }
+
+        internal void hasThresholdReached(int nodeId)
+        {
+            IWorkerTracker tracker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), Worker.JOBTRACKER_URL);
+            tracker.readyForNewTask(nodeId);
+        }
     }
 }
