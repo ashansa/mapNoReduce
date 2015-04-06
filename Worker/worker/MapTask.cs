@@ -16,6 +16,7 @@ namespace Server.worker
         int splitId;
         static Boolean requiredStatusSend = false;
         Status currentStatus = new Status();//to keep track of local current status
+        public static Boolean hasthresholdreached = false;
 
         public Status CurrentStatus
         {

@@ -163,5 +163,10 @@ namespace Server.tracker
                 }
             }
         }
+
+        internal void readyForNewTask(int nodeId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

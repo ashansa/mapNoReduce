@@ -154,6 +154,12 @@ namespace PADIMapNoReduce
             }
         }
 
+        public void readyForNewTask(int nodeId)
+        {
+
+            trackerTask.readyForNewTask(nodeId);
+        }
+
         #endregion
 
         #region services exposed to puppet
