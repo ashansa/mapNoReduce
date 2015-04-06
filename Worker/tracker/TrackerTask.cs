@@ -10,6 +10,8 @@ namespace Server.tracker
     public class TrackerTask
     {
         TrackerDetails trackerDetails;
+        private Dictionary<int, IWorkerTracker> workerProxyMap = new Dictionary<int, IWorkerTracker>();
+        private int currentSplitIndex = 0;
 
         public TrackerTask(TrackerDetails trackerDetails)
         {
@@ -49,6 +51,9 @@ namespace Server.tracker
                  receiveCompletedTask(taskResult);*/
             }
 
+            //we are reinitializing the split index for a new job
+            currentSplitIndex = 0;
+
             distributeTasks();
         }
 
@@ -57,20 +62,44 @@ namespace Server.tracker
             //TODO : for now assume splits < workers
             // implement to check the completed status and send jobs
             // TODO: handle when trackerDetails.ExistingWorkerMap.Count = 0
-
-            for (int i = 0; i < trackerDetails.FileSplitData.Count; i++)
+            if (trackerDetails.FileSplitData.Count < trackerDetails.ExistingWorkerMap.Count)
             {
-                FileSplitMetadata splitData = trackerDetails.FileSplitData[i];
 
-                KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i % trackerDetails.ExistingWorkerMap.Count);
-                IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-                worker.receiveTask(splitData);
+                for (int i = 0; i < trackerDetails.FileSplitData.Count; i++)
+                {
+                    FileSplitMetadata splitData = trackerDetails.FileSplitData[i];
 
-                upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
+                    KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i % trackerDetails.ExistingWorkerMap.Count);
+                    IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+                    worker.receiveTask(splitData);
 
-                Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
+                    upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
 
-                upsertMapTaskDetails(status);
+                    Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
+
+                    upsertMapTaskDetails(status);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < trackerDetails.ExistingWorkerMap.Count; i++)
+                {
+
+                    FileSplitMetadata splitData = trackerDetails.FileSplitData[currentSplitIndex];
+                    KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i);
+                    IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+                    //IWorker worker = new Worker(10+i);
+                    worker.receiveTask(splitData);
+
+                    upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
+                    Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
+                    upsertMapTaskDetails(status);
+
+                    workerProxyMap.Add(entry.Key, worker);
+                    currentSplitIndex++;
+
+                }
+
             }
         }
 
@@ -166,7 +195,14 @@ namespace Server.tracker
 
         internal void readyForNewTask(int nodeId)
         {
-            throw new NotImplementedException();
+            if (currentSplitIndex < trackerDetails.FileSplitData.Count)
+            {
+                IWorkerTracker worker = workerProxyMap[nodeId];
+                FileSplitMetadata splitData = trackerDetails.FileSplitData[currentSplitIndex];
+                worker.receiveTask(splitData);
+
+                currentSplitIndex++;
+            }
         }
     }
 }
