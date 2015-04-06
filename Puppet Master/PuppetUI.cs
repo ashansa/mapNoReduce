@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ namespace Puppet_Master
     {
 
         Utils utils = new Utils();
+        string scriptPath = null;
+        string[] scriptCommands = null;
 
         public PuppetUI()
         {
@@ -41,6 +44,34 @@ namespace Puppet_Master
         private void btn_View_Status_Click(object sender, EventArgs e)
         {
             utils.executeCommand("status");
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            utils.executeCommand(txt_command.Text);
+        }
+
+        // browse file button
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (openScriptFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                this.label_filePath.Text = openScriptFileDialog.FileName;
+                scriptPath = openScriptFileDialog.FileName;
+            }
+        }
+        //btn_executeScript button
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (scriptPath == null)
+            {
+                label_filePath.Text = "Please select the file with script commands";
+            }
+            else
+            {
+                scriptCommands = File.ReadAllLines(scriptPath);
+                utils.executeScript(scriptCommands);
+            }
         }
     }
 }
