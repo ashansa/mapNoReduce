@@ -57,7 +57,7 @@
             // 
             // client_submit
             // 
-            client_submit.Location = new System.Drawing.Point(36, 231);
+            client_submit.Location = new System.Drawing.Point(36, 249);
             client_submit.Name = "client_submit";
             client_submit.Size = new System.Drawing.Size(75, 23);
             client_submit.TabIndex = 5;
@@ -75,7 +75,7 @@
             // 
             // txt_clientCreate
             // 
-            this.txt_clientCreate.Location = new System.Drawing.Point(36, 205);
+            this.txt_clientCreate.Location = new System.Drawing.Point(36, 217);
             this.txt_clientCreate.Name = "txt_clientCreate";
             this.txt_clientCreate.Size = new System.Drawing.Size(390, 20);
             this.txt_clientCreate.TabIndex = 4;
@@ -137,7 +137,7 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(168, 148);
+            this.textBox1.Location = new System.Drawing.Point(169, 151);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(400, 20);
             this.textBox1.TabIndex = 10;
@@ -146,7 +146,7 @@
             // 
             // btn_View_Status
             // 
-            this.btn_View_Status.Location = new System.Drawing.Point(36, 285);
+            this.btn_View_Status.Location = new System.Drawing.Point(36, 339);
             this.btn_View_Status.Name = "btn_View_Status";
             this.btn_View_Status.Size = new System.Drawing.Size(96, 23);
             this.btn_View_Status.TabIndex = 11;

@@ -8,6 +8,7 @@ namespace PADIMapNoReduce
     
    public class Constants
     {
+       public const double maxThreshold = 80;
        public const string APPSETT_CLIENT_URL= "CLIENT_URL";
        public const string APPSET_DLL_PATH = "DLL_PATH";
        public const string APPSETT_PUPPETS_URL = "PUPPET_URLS";
