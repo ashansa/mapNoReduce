@@ -34,7 +34,7 @@ namespace Puppet_Master
                 client.initClient();
             }
             String[] pairs = command.Split(Constants.SPACE_CHAR);
-            client.submitTask(pairs[1], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5]);
+            client.submitTask(pairs[1], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5],pairs[6]);
         }
 
         public void executeCommand(string command)

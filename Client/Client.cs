@@ -16,6 +16,7 @@ namespace PADIMapNoReduce
     public class Client : MarshalByRefObject, IClient
     {
         string url;
+        string dllPath;
         private string inputFilePath;
         private string outputDir;
         IWorkerTracker contactingWorker;
@@ -60,12 +61,12 @@ namespace PADIMapNoReduce
            
         }
 
-        public void submitTask(String entryUrl,string inputFile, string outputDir, int splits, string mapperFunctionName)
+        public void submitTask(String entryUrl,string inputFile, string outputDir, int splits, string mapperFunctionName,string dllPath)
         {
             this.inputFilePath = inputFile;
             this.outputDir = outputDir;
             this.mapperName = mapperFunctionName;
-           
+            this.dllPath = dllPath;
             byte[] input = File.ReadAllBytes(inputFilePath);
             JobMetadata jobDetails = new JobMetadata(input.Length, splits, url);
             contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entryUrl);

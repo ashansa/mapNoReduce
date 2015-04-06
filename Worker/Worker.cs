@@ -147,25 +147,11 @@ namespace PADIMapNoReduce
        /*FIXME Do we really need this??  */
         public void taskCompleted(int nodeId,int splitId)
         {
+             trackerTask.resultSentToClient(nodeId, splitId);
             if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
             {
                 client.receiveJobCompletedNotification();
             }
-        }
-
-        /*will call by worker when result has sent to client*/
-        public void resultSentToClient(int nodeId, int splitId)
-        {
-            //add split to completed
-            trackerTask.resultSentToClient(nodeId, splitId);
-
-            //FIXME  !!!!!!!!!!!!! AM I CORRECT? MAY BE NEEDED LATER!NOW JOB TRACKER IS BOTH
-            //resume worker threads, should happen when all results are sent
-          /*  if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
-            {
-                workerTask = new WorkerTask(nodeId);
-                workerTask.startWorkerThreads();
-            }*/
         }
 
         #endregion

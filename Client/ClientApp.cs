@@ -29,7 +29,7 @@ namespace PADIMapNoReduce
             int splits = Int32.Parse(txSplits.Text);
             Client client = new Client();
             client.initClient();
-            client.submitTask("entry url", txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
+            //client.submitTask("entry url", txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
           // new Client("tcp://localhost:9443/Client").submitTask(txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
         }
     }

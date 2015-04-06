@@ -60,16 +60,15 @@ namespace Server.tracker
 
             for (int i = 0; i < trackerDetails.FileSplitData.Count; i++)
             {
-                FileSplitMetadata jobData = trackerDetails.FileSplitData[i];
+                FileSplitMetadata splitData = trackerDetails.FileSplitData[i];
 
                 KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i % trackerDetails.ExistingWorkerMap.Count);
                 IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-                //IWorker worker = new Worker(10+i);
-                worker.receiveTask(jobData);
+                worker.receiveTask(splitData);
 
-                upsertSubmittedSplits(jobData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
+                upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
 
-                Status status = createStartingStatusObject(jobData.SplitId, entry.Key);
+                Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
 
                 upsertMapTaskDetails(status);
             }
@@ -84,6 +83,8 @@ namespace Server.tracker
             return status;
         }
 
+
+        //update status of rela
         public void resultSentToClient(int nodeId, int splitId)
         {
             lock (trackerDetails)
