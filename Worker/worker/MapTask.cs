@@ -132,7 +132,8 @@ namespace Server.worker
             statusToSet.NodeId = workerId;
             CurrentStatus = statusToSet;
 
-            if (!hasthresholdreached)
+
+            if (!hasthresholdreached && percentage>Constants.maxThreshold)//send notification when it first reach threshold
             {
                 hasthresholdreached = true;
                 WorkerCommunicator communicator = new WorkerCommunicator();

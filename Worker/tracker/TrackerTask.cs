@@ -65,17 +65,17 @@ namespace Server.tracker
             if (trackerDetails.FileSplitData.Count < trackerDetails.ExistingWorkerMap.Count)
             {
 
-                for (int i = 0; i < trackerDetails.FileSplitData.Count; i++)
-                {
-                    FileSplitMetadata splitData = trackerDetails.FileSplitData[i];
+            for (int i = 0; i < trackerDetails.FileSplitData.Count; i++)
+            {
+                FileSplitMetadata splitData = trackerDetails.FileSplitData[i];
 
-                    KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i % trackerDetails.ExistingWorkerMap.Count);
-                    IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-                    worker.receiveTask(splitData);
+                KeyValuePair<Int32, string> entry = trackerDetails.ExistingWorkerMap.ElementAt(i % trackerDetails.ExistingWorkerMap.Count);
+                IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
+                worker.receiveTask(splitData);
 
-                    upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
+                upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
 
-                    Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
+                Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
 
                     upsertMapTaskDetails(status);
                 }
@@ -93,7 +93,7 @@ namespace Server.tracker
 
                     upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
                     Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
-                    upsertMapTaskDetails(status);
+                upsertMapTaskDetails(status);
 
                     workerProxyMap.Add(entry.Key, worker);
                     currentSplitIndex++;
