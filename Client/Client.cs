@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Configuration;
 using System.Collections;
 using System.Text;
+using System.Threading;
 
 namespace PADIMapNoReduce
 {
@@ -125,7 +126,24 @@ namespace PADIMapNoReduce
         public void receiveJobCompletedNotification()
         {
             //TODO: notify UI???
-        }
+            ClientApp clientapp = new ClientApp();
+            new Thread(delegate()
+           {
+               Application.Run(clientapp);
+           }).Start();
+            Thread.Sleep(2000);
+              ClientApp.printMsg eve = new ClientApp.printMsg(clientapp.addMessage);
+                try
+                {
+                    clientapp.Invoke(eve, new Object[] { "job completed" });
+                    // form1.Invoke(new ChatApp.Form1.printMsg(form1.addMessage), new Object[] { msg });
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+            }
+            
 
         private string getSplit(long startByte, long endByte)
         {

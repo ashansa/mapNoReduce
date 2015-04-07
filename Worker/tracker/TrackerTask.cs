@@ -50,10 +50,6 @@ namespace Server.tracker
                  TaskResult taskResult = new TaskResult(result, i);
                  receiveCompletedTask(taskResult);*/
             }
-
-            //we are reinitializing the split index for a new job
-            currentSplitIndex = 0;
-
             distributeTasks();
         }
 
@@ -93,11 +89,9 @@ namespace Server.tracker
 
                     upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
                     Status status = createStartingStatusObject(splitData.SplitId, entry.Key);
-                upsertMapTaskDetails(status);
+                    upsertMapTaskDetails(status);
 
                     workerProxyMap.Add(entry.Key, worker);
-                    currentSplitIndex++;
-
                 }
 
             }
@@ -195,14 +189,36 @@ namespace Server.tracker
 
         internal void readyForNewTask(int nodeId)
         {
-            if (currentSplitIndex < trackerDetails.FileSplitData.Count)
+            Boolean hasSplitSent=false;
+            FileSplitMetadata splitData=null;
+            IWorkerTracker worker=null;
+            lock (trackerDetails.SubmittedSplits)
             {
-                IWorkerTracker worker = workerProxyMap[nodeId];
-                FileSplitMetadata splitData = trackerDetails.FileSplitData[currentSplitIndex];
-                worker.receiveTask(splitData);
+                if (trackerDetails.SubmittedSplits.Count < trackerDetails.FileSplitData.Count)
+                {
+                    worker = workerProxyMap[nodeId];
+                    int splitIdToSend = getSplitIdToSend();
+                    splitData = trackerDetails.FileSplitData[splitIdToSend];
+                    hasSplitSent = true;
+                }
+            }
 
-                currentSplitIndex++;
+            if (hasSplitSent)
+            {
+                worker.receiveTask(splitData);
+                upsertSubmittedSplits(splitData.SplitId);//in case of performance based scheduling we can use (all-submitted-completed) to submit;
+                Status status = createStartingStatusObject(splitData.SplitId,nodeId);
+                upsertMapTaskDetails(status);
             }
         }
+
+        private int getSplitIdToSend()
+        {
+        int splitId=trackerDetails.AllSplits.Except(trackerDetails.SubmittedSplits).FirstOrDefault();
+        trackerDetails.SubmittedSplits.Add(splitId);
+        return splitId;
+        }
+
+
     }
 }

@@ -150,6 +150,7 @@ namespace PADIMapNoReduce
              trackerTask.resultSentToClient(nodeId, splitId);
             if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
             {
+                Console.WriteLine("all splits are completed");
                 client.receiveJobCompletedNotification();
             }
         }

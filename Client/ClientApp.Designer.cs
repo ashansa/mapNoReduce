@@ -37,6 +37,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.btSubmit = new System.Windows.Forms.Button();
             this.txMapper = new System.Windows.Forms.TextBox();
+            this.txtComplete = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label1
@@ -98,7 +99,7 @@
             // 
             // btSubmit
             // 
-            this.btSubmit.Location = new System.Drawing.Point(197, 204);
+            this.btSubmit.Location = new System.Drawing.Point(130, 187);
             this.btSubmit.Name = "btSubmit";
             this.btSubmit.Size = new System.Drawing.Size(75, 23);
             this.btSubmit.TabIndex = 7;
@@ -113,11 +114,20 @@
             this.txMapper.Size = new System.Drawing.Size(100, 20);
             this.txMapper.TabIndex = 8;
             // 
+            // txtComplete
+            // 
+            this.txtComplete.Location = new System.Drawing.Point(25, 257);
+            this.txtComplete.Multiline = true;
+            this.txtComplete.Name = "txtComplete";
+            this.txtComplete.Size = new System.Drawing.Size(386, 64);
+            this.txtComplete.TabIndex = 9;
+            // 
             // ClientApp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 262);
+            this.ClientSize = new System.Drawing.Size(461, 435);
+            this.Controls.Add(this.txtComplete);
             this.Controls.Add(this.txMapper);
             this.Controls.Add(this.btSubmit);
             this.Controls.Add(this.label4);
@@ -129,6 +139,7 @@
             this.Controls.Add(this.label1);
             this.Name = "ClientApp";
             this.Text = "ClientApp";
+            this.Load += new System.EventHandler(this.ClientApp_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -145,5 +156,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button btSubmit;
         private System.Windows.Forms.TextBox txMapper;
+        private System.Windows.Forms.TextBox txtComplete;
     }
 }

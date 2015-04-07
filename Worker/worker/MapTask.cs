@@ -50,6 +50,12 @@ namespace Server.worker
     
         List<KeyValuePair<string, string>> result;
 
+        static int keyValuePairComparator(KeyValuePair<string, String> a, KeyValuePair<string, String> b)
+        {
+            return a.Key.CompareTo(b.Key);
+        }
+
+
         public bool runMapperForLine(byte[] code, string className, String line)
         {
             Assembly assembly = Assembly.Load(code);
@@ -162,6 +168,7 @@ namespace Server.worker
         private byte[] getByteStreamOfResults()
         {
             StringBuilder output = new StringBuilder();
+            result.Sort(keyValuePairComparator);
             foreach (KeyValuePair<string, string> pair in result)
             {
                 output.Append(pair.Key).Append(":").Append(pair.Value);

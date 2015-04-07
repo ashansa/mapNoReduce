@@ -21,7 +21,15 @@ namespace Puppet_Master
 
         public PuppetUI()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+                //utils.initPuppet();
+            }
+            catch (Exception ex)
+            {
+              
+            }
         }
 
         private void worker_submit_Click(object sender, EventArgs e)

@@ -10,6 +10,7 @@ namespace LibMapper {
         {
             IList<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
             result.Add(new KeyValuePair<string, string>("testKey1", fileLine));
+            result.Add(new KeyValuePair<string, string>("testKey2", fileLine));
             return result;
         }
     }
