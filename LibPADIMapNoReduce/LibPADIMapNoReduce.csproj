@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Entities\JobMetadata.cs" />
     <Compile Include="Entities\TrackerDetails.cs" />
+    <Compile Include="Entities\Task.cs" />
     <Compile Include="Interfaces\IPuppetMaster.cs" />
     <Compile Include="utils\Common.cs" />
     <Compile Include="utils\Constants.cs" />

@@ -129,8 +129,8 @@ namespace PADIMapNoReduce
             client = (IClient)Activator.GetObject(typeof(IClient), CLIENT_URL);
 
             //start jobtracker threads
-            TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, existingWorkerMap);
-            trackerTask = new TrackerTask(trackerDetails);
+            //TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, existingWorkerMap);
+            trackerTask = new TrackerTask(CLIENT_URL,existingWorkerMap);
 
             trackerTask.splitJob(jobMetadata);
                 
@@ -148,7 +148,7 @@ namespace PADIMapNoReduce
         public void taskCompleted(int nodeId,int splitId)
         {
              trackerTask.resultSentToClient(nodeId, splitId);
-            if (trackerTask.TrackerDetails.FileSplitData.Count == trackerTask.TrackerDetails.resultSentToClientSplits.Count)
+            if (trackerTask.isJobCompleted())
             {
                 Console.WriteLine("all splits are completed");
                 client.receiveJobCompletedNotification();

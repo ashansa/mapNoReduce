@@ -30,6 +30,9 @@ namespace Puppet_Master
                 case "status":
                     callDisplayStatus();
                     break;
+
+                case "sloww":
+
                 default:
                     break;
 
@@ -58,6 +61,8 @@ namespace Puppet_Master
 
             if (splits.Length == 5 && splits[4] != string.Empty)
                 workerMetadata.EntryURL = splits[4];
+
+            //Create worker-Id puppet map to use with wait, freeze, unfreeze etc
             puppet.createWorker(workerMetadata);
         }
 

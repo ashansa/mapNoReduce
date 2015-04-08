@@ -20,6 +20,7 @@ namespace Puppet_Master
         String puppetUrl;
         static Worker worker;
         List<String> puppetUrlList = new List<string>();
+        Dictionary<int, string> workerPuppetMap = new Dictionary<int, string>();
 
         public List<String> PuppetUrlList
         {
