@@ -75,6 +75,15 @@ namespace Server.worker
             
         }
 
+        /*Depricated but seems ok*/
+        public void slowWorkerThreads(int seconds)
+        {
+            splitProcessor.Suspend();
+            Thread.Sleep(seconds * 1000);
+            splitProcessor.Resume();
+
+        }
+
         private void sendResults()
         {
             WorkerCommunicator communicator = new WorkerCommunicator();
@@ -93,7 +102,7 @@ namespace Server.worker
                 }
                 communicator.sendResultsToClient(taskResult);
                 communicator.notifyResultsSentToClientEvent(workerId,taskResult.SplitId);
-
+                Console.WriteLine("result sent by " + workerId);
             }
         }
 

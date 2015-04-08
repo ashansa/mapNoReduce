@@ -22,6 +22,12 @@ namespace Puppet_Master
         List<String> puppetUrlList = new List<string>();
         Dictionary<int, string> workerPuppetMap = new Dictionary<int, string>();
 
+        public Dictionary<int, string> WorkerPuppetMap
+        {
+            get { return workerPuppetMap; }
+            set { workerPuppetMap = value; }
+        }
+
         public List<String> PuppetUrlList
         {
             get { return puppetUrlList; }
@@ -42,6 +48,11 @@ namespace Puppet_Master
             }).Start();
            // worker.initWorker(workerMetadata);
             return true;
+        }
+
+        public void slowWorker(int seconds)
+        {
+            worker.slowWorker(seconds);
         }
 
        public void displayStatus()
@@ -87,17 +98,25 @@ namespace Puppet_Master
 
         internal void callPuppetsDisplayStatus()
         {
-            displayStatus();//display status on local node
+          //  displayStatus();//display status on local node
 
-            for (int i = 0; i < puppetUrlList.Count; i++)
+            for (int i = 0; i < puppetUrlList.Count; i++)//including myself
             {
                 IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
                  typeof(IPuppetMaster),
                puppetUrlList[i]);
-                puppet.displayStatus();//display status on remote nodes
+               puppet.displayStatus();//display status on remote nodes
             }
         }
 
+        internal void callRemoteWaitWorker(int workerId,int seconds)
+        {
+            String puppetToConnect = workerPuppetMap[workerId];
+            IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
+                typeof(IPuppetMaster),
+           puppetToConnect);
+           puppet.slowWorker(seconds);
+        }
         #endregion
         #region specific
         public override object InitializeLifetimeService()
@@ -105,5 +124,6 @@ namespace Puppet_Master
             return null;
         }
         #endregion
+
     }
 }

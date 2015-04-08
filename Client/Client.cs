@@ -102,8 +102,6 @@ namespace PADIMapNoReduce
             string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
             //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
-
-            Console.WriteLine("split ===================> " + workerMetadata.Chunk);
             Console.WriteLine(Environment.CurrentDirectory);
             return workerMetadata;
         }
@@ -154,8 +152,6 @@ namespace PADIMapNoReduce
             {
                 fs.Seek(startByte - 1, SeekOrigin.Current);
                 int previous = fs.ReadByte();
-                //if previous is not 10 go forward to next line
-                Console.WriteLine("byte before first byte--->" + previous);
                 int i;
                 while ((i = fs.ReadByte()) != '\n')
                 {

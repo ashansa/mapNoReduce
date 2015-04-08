@@ -23,8 +23,8 @@ namespace Puppet_Master
         {
             try
             {
+                utils.initPuppet();
                 InitializeComponent();
-                //utils.initPuppet();
             }
             catch (Exception ex)
             {
@@ -40,7 +40,7 @@ namespace Puppet_Master
 
         private void init_Click(object sender, EventArgs e)
         {
-            utils.initPuppet(txt_puppetId.Text);
+            utils.initPuppet();
             init.Enabled = false;
         }
 

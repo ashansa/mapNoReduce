@@ -202,6 +202,11 @@ namespace PADIMapNoReduce
         }
 
 
+        public void slowWorker(int seconds)
+        {
+            workerTask.slowWorkerThreads(seconds);
+        }
+
         public void addNewWorker(int nodeId,String newWorkerURL)
         {
             existingWorkerMap.Add(nodeId, newWorkerURL);

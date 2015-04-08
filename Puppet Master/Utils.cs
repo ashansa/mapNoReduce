@@ -32,11 +32,20 @@ namespace Puppet_Master
                     break;
 
                 case "sloww":
-
+                    callWaitWorker(command);
+                    break;
                 default:
                     break;
-
+                    
             }
+        }
+
+        private void callWaitWorker(string command)
+        {
+            string[] paramStr=command.Split(Constants.SPACE_CHAR);
+            int workerId = Convert.ToInt16(paramStr[1]);
+            int delayInSeconds = Convert.ToInt32(paramStr[2]);
+            puppet.callRemoteWaitWorker(workerId,delayInSeconds);
         }
 
         public void executeScript(string[] scriptCommands)
@@ -63,6 +72,7 @@ namespace Puppet_Master
                 workerMetadata.EntryURL = splits[4];
 
             //Create worker-Id puppet map to use with wait, freeze, unfreeze etc
+            puppet.WorkerPuppetMap.Add(workerMetadata.WorkerId, workerMetadata.PuppetRUL);
             puppet.createWorker(workerMetadata);
         }
 
@@ -83,7 +93,7 @@ namespace Puppet_Master
         }
 
 
-        internal void initPuppet(String url)
+        internal void initPuppet()
         {
             String puppetsStr= ConfigurationManager.AppSettings[Constants.APPSETT_PUPPETS_URL].ToString();
             String[] puppets = puppetsStr.Split(';');
@@ -91,7 +101,7 @@ namespace Puppet_Master
             {
                 puppet.PuppetUrlList.Add(puppets[i]);
             }
-            puppet.initPuppet(url);//later we will change it go take from puppetStr
+            puppet.initPuppet(puppets[0]);//later we will change it go take from puppetStr
         }
     }
 }
