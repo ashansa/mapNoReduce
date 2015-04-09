@@ -5,6 +5,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Puppet_Master
@@ -20,6 +21,7 @@ namespace Puppet_Master
             switch (keyword)
             {
                 case "submit":
+                    Thread.Sleep(3000);
                     submitJobToClient(command);
                     break;
 
@@ -31,21 +33,21 @@ namespace Puppet_Master
                     callDisplayStatus();
                     break;
 
-                case "sloww":
+                case "sloww"://sloww 2 60
                     callWaitWorker(command);
                     break;
                 default:
                     break;
-                    
+
             }
         }
 
         private void callWaitWorker(string command)
         {
-            string[] paramStr=command.Split(Constants.SPACE_CHAR);
+            string[] paramStr = command.Split(Constants.SPACE_CHAR);
             int workerId = Convert.ToInt16(paramStr[1]);
             int delayInSeconds = Convert.ToInt32(paramStr[2]);
-            puppet.callRemoteWaitWorker(workerId,delayInSeconds);
+            puppet.callRemoteWaitWorker(workerId, delayInSeconds);
         }
 
         public void executeScript(string[] scriptCommands)
@@ -59,7 +61,7 @@ namespace Puppet_Master
                 }
             }
         }
-        
+
         private void createWorker(string command)
         {
             String[] splits = command.Split(Constants.SPACE_CHAR);
@@ -84,7 +86,7 @@ namespace Puppet_Master
                 client.initClient();
             }
             String[] pairs = command.Split(Constants.SPACE_CHAR);
-            client.submitTask(pairs[1], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5],pairs[6]);
+            client.submitTask(pairs[1], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5], pairs[6]);
         }
 
         private void callDisplayStatus()
@@ -95,7 +97,7 @@ namespace Puppet_Master
 
         internal void initPuppet()
         {
-            String puppetsStr= ConfigurationManager.AppSettings[Constants.APPSETT_PUPPETS_URL].ToString();
+            String puppetsStr = ConfigurationManager.AppSettings[Constants.APPSETT_PUPPETS_URL].ToString();
             String[] puppets = puppetsStr.Split(';');
             for (int i = 0; i < puppets.Length; i++)//i==0 is myself
             {

@@ -197,7 +197,9 @@ namespace PADIMapNoReduce
                 Status status=workerTask.getMapTask().CurrentStatus;
                 if (workerTask != null && workerTask.getMapTask() != null && status!=null)
                 {
+                    Console.WriteLine("###########Worker Status #########");
                     Console.WriteLine("worker id is " + workerId +" Split id is "+status.SplitId+ " status is" +status.PercentageCompleted+ "%");
+                    Console.WriteLine("########################");
                 }
         }
 

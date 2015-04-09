@@ -107,6 +107,7 @@ namespace Server.tracker
         internal void printStatus(int trackerId)
         {
             StringBuilder sb = new StringBuilder();
+            Console.WriteLine("########Tracker Status######");
             Console.WriteLine("tracker Id is " + trackerId);
             sb.Append("Splits which result sent to client are.... \r\n");
             lock (taskList)
@@ -129,6 +130,7 @@ namespace Server.tracker
                 }
                 Console.WriteLine(sb.ToString());
             }
+            Console.WriteLine("################");
         }
 
         /*assign ranking to each node and assign tasks based on that*/

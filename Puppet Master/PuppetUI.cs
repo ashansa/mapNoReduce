@@ -32,27 +32,18 @@ namespace Puppet_Master
             }
         }
 
-        private void worker_submit_Click(object sender, EventArgs e)
+     /*   private void worker_submit_Click(object sender, EventArgs e)
         {
             utils.executeCommand(txt_workerCreate.Text);          
         }
 
 
-        private void init_Click(object sender, EventArgs e)
-        {
-            utils.initPuppet();
-            init.Enabled = false;
-        }
-
         private void client_submit_Click(object sender, EventArgs e)
         {
             utils.executeCommand(txt_clientCreate.Text);
-        }
+        }*/
 
-        private void btn_View_Status_Click(object sender, EventArgs e)
-        {
-            utils.executeCommand("status");
-        }
+   
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -80,6 +71,16 @@ namespace Puppet_Master
                 scriptCommands = File.ReadAllLines(scriptPath);
                 utils.executeScript(scriptCommands);
             }
+        }
+
+        private void btn_Status_Click(object sender, EventArgs e)
+        {
+            utils.executeCommand("status");
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            utils.executeCommand(txt_slow_worker.Text);
         }
     }
 }

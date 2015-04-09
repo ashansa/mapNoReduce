@@ -28,19 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.Button worker_submit;
-            System.Windows.Forms.Button client_submit;
-            this.txt_workerCreate = new System.Windows.Forms.TextBox();
-            this.txt_clientCreate = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.txt_puppetId = new System.Windows.Forms.TextBox();
-            this.init = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.btn_View_Status = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
             this.txt_command = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
@@ -49,91 +37,11 @@
             this.label_filePath = new System.Windows.Forms.Label();
             this.openScriptFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.btn_executeScript = new System.Windows.Forms.Button();
-            worker_submit = new System.Windows.Forms.Button();
-            client_submit = new System.Windows.Forms.Button();
+            this.btn_Status = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txt_slow_worker = new System.Windows.Forms.TextBox();
+            this.button3 = new System.Windows.Forms.Button();
             this.SuspendLayout();
-            // 
-            // worker_submit
-            // 
-            worker_submit.Location = new System.Drawing.Point(494, 276);
-            worker_submit.Name = "worker_submit";
-            worker_submit.Size = new System.Drawing.Size(75, 23);
-            worker_submit.TabIndex = 3;
-            worker_submit.Text = "submit";
-            worker_submit.UseVisualStyleBackColor = true;
-            worker_submit.Click += new System.EventHandler(this.worker_submit_Click);
-            // 
-            // client_submit
-            // 
-            client_submit.Location = new System.Drawing.Point(494, 415);
-            client_submit.Name = "client_submit";
-            client_submit.Size = new System.Drawing.Size(75, 23);
-            client_submit.TabIndex = 5;
-            client_submit.Text = "submit";
-            client_submit.UseVisualStyleBackColor = true;
-            client_submit.Click += new System.EventHandler(this.client_submit_Click);
-            // 
-            // txt_workerCreate
-            // 
-            this.txt_workerCreate.Location = new System.Drawing.Point(40, 276);
-            this.txt_workerCreate.Name = "txt_workerCreate";
-            this.txt_workerCreate.Size = new System.Drawing.Size(390, 20);
-            this.txt_workerCreate.TabIndex = 1;
-            this.txt_workerCreate.Text = "Worker 1 tcp://localhost:9443/Puppet tcp://localhost:11000/Worker";
-            // 
-            // txt_clientCreate
-            // 
-            this.txt_clientCreate.Location = new System.Drawing.Point(36, 418);
-            this.txt_clientCreate.Name = "txt_clientCreate";
-            this.txt_clientCreate.Size = new System.Drawing.Size(390, 20);
-            this.txt_clientCreate.TabIndex = 4;
-            this.txt_clientCreate.Text = "Submit tcp://localhost:11000/Worker E:\\input\\chathuri.txt E:\\input 8 Mapper E:\\GI" +
-    "T\\PADI\\mapNoReduce\\LibMapper\\bin\\Debug\\LibMapper.dll";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(37, 380);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(62, 13);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Start clients";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(37, 246);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(69, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Start workers";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(33, 212);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(66, 13);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Puppet URL";
-            // 
-            // txt_puppetId
-            // 
-            this.txt_puppetId.Location = new System.Drawing.Point(125, 209);
-            this.txt_puppetId.Name = "txt_puppetId";
-            this.txt_puppetId.Size = new System.Drawing.Size(216, 20);
-            this.txt_puppetId.TabIndex = 7;
-            this.txt_puppetId.Text = "tcp://localhost:9443/Puppet";
-            // 
-            // init
-            // 
-            this.init.Location = new System.Drawing.Point(387, 207);
-            this.init.Name = "init";
-            this.init.Size = new System.Drawing.Size(75, 23);
-            this.init.TabIndex = 8;
-            this.init.Text = "Submit";
-            this.init.UseVisualStyleBackColor = true;
-            this.init.Click += new System.EventHandler(this.init_Click);
             // 
             // label4
             // 
@@ -142,34 +50,6 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(0, 13);
             this.label4.TabIndex = 9;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(169, 305);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(400, 20);
-            this.textBox1.TabIndex = 10;
-            this.textBox1.Text = "Worker 2 tcp://localhost:9450/Puppet tcp://localhost:11100/Worker tcp://localhost" +
-    ":11000/Worker";
-            // 
-            // btn_View_Status
-            // 
-            this.btn_View_Status.Location = new System.Drawing.Point(36, 468);
-            this.btn_View_Status.Name = "btn_View_Status";
-            this.btn_View_Status.Size = new System.Drawing.Size(96, 23);
-            this.btn_View_Status.TabIndex = 11;
-            this.btn_View_Status.Text = "View Job Status";
-            this.btn_View_Status.UseVisualStyleBackColor = true;
-            this.btn_View_Status.Click += new System.EventHandler(this.btn_View_Status_Click);
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(169, 344);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(400, 20);
-            this.textBox2.TabIndex = 12;
-            this.textBox2.Text = "Worker 3 tcp://localhost:9460/Puppet tcp://localhost:11500/Worker tcp://localhost" +
-    ":11000/Worker";
             // 
             // txt_command
             // 
@@ -199,7 +79,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(36, 102);
+            this.button2.Location = new System.Drawing.Point(42, 106);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 16;
@@ -229,30 +109,58 @@
             this.btn_executeScript.UseVisualStyleBackColor = true;
             this.btn_executeScript.Click += new System.EventHandler(this.button3_Click);
             // 
+            // btn_Status
+            // 
+            this.btn_Status.Location = new System.Drawing.Point(156, 253);
+            this.btn_Status.Name = "btn_Status";
+            this.btn_Status.Size = new System.Drawing.Size(88, 23);
+            this.btn_Status.TabIndex = 19;
+            this.btn_Status.Text = "View Status";
+            this.btn_Status.UseVisualStyleBackColor = true;
+            this.btn_Status.Click += new System.EventHandler(this.btn_Status_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 178);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(114, 13);
+            this.label1.TabIndex = 20;
+            this.label1.Text = "Slow worker command";
+            // 
+            // txt_slow_worker
+            // 
+            this.txt_slow_worker.Location = new System.Drawing.Point(133, 178);
+            this.txt_slow_worker.Name = "txt_slow_worker";
+            this.txt_slow_worker.Size = new System.Drawing.Size(166, 20);
+            this.txt_slow_worker.TabIndex = 21;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(344, 178);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 23);
+            this.button3.TabIndex = 22;
+            this.button3.Text = "Submit";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click_1);
+            // 
             // PuppetUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(657, 521);
+            this.ClientSize = new System.Drawing.Size(626, 288);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.txt_slow_worker);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.btn_Status);
             this.Controls.Add(this.btn_executeScript);
             this.Controls.Add(this.label_filePath);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.txt_command);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.btn_View_Status);
-            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.init);
-            this.Controls.Add(this.txt_puppetId);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(client_submit);
-            this.Controls.Add(this.txt_clientCreate);
-            this.Controls.Add(worker_submit);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.txt_workerCreate);
-            this.Controls.Add(this.label1);
             this.Name = "PuppetUI";
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -262,17 +170,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox txt_workerCreate;
-        private System.Windows.Forms.TextBox txt_clientCreate;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox txt_puppetId;
-        private System.Windows.Forms.Button init;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button btn_View_Status;
-        private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.TextBox txt_command;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button button1;
@@ -281,6 +179,10 @@
         private System.Windows.Forms.Label label_filePath;
         private System.Windows.Forms.OpenFileDialog openScriptFileDialog;
         private System.Windows.Forms.Button btn_executeScript;
+        private System.Windows.Forms.Button btn_Status;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txt_slow_worker;
+        private System.Windows.Forms.Button button3;
     }
 }
 
