@@ -87,8 +87,8 @@
             this.txt_clientCreate.Name = "txt_clientCreate";
             this.txt_clientCreate.Size = new System.Drawing.Size(390, 20);
             this.txt_clientCreate.TabIndex = 4;
-            this.txt_clientCreate.Text = "Submit tcp://localhost:11000/Worker E:\\input\\chathuri.txt E:\\input 8 Mapper ..\\.." +
-    "\\..\\LibMapper\\bin\\Debug\\LibMapper.dll";
+            this.txt_clientCreate.Text = "Submit tcp://localhost:11000/Worker E:\\input\\chathuri.txt E:\\input 8 Mapper E:\\GI" +
+    "T\\PADI\\mapNoReduce\\LibMapper\\bin\\Debug\\LibMapper.dll";
             // 
             // label2
             // 

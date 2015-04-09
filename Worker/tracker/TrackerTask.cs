@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace Server.tracker
 {
@@ -70,10 +71,17 @@ namespace Server.tracker
                     {
                         break;
                     }
-                    IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value);
-                    worker.receiveTask(splitData);
-                    workerProxyMap.Add(entry.Key, worker);
+                    
+                    /* try to do this in a seperate thread */
+                    Thread thread = new Thread(() => sendSplitToWorker(splitData,entry.Key,entry.Value));
+                    thread.Start();
                 }
+        }
+        private void sendSplitToWorker(FileSplitMetadata splitData, int workerId,string url)
+        {
+            IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker),url);
+            worker.receiveTask(splitData);
+            workerProxyMap.Add(workerId, worker);
         }
 
         //update status of rela
