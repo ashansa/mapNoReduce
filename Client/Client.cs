@@ -97,7 +97,7 @@ namespace PADIMapNoReduce
         public WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata)
         {
             /*we need to set the input file part in workerMetadata.chunk*/
-            String inputCode = ConfigurationManager.AppSettings[Constants.APPSET_DLL_PATH].ToString();
+            String inputCode = this.dllPath;
             byte[] code = File.ReadAllBytes(inputCode);
             string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
             //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
