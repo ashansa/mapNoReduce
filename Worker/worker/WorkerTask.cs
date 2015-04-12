@@ -17,6 +17,7 @@ namespace Server.worker
         Thread resultSender;
         Thread statusUpdateNotificationThread;
         MapTask mapTask = new MapTask();
+        WorkerCommunicator communicator = new WorkerCommunicator();
 
         public WorkerTask(int workerId)
         {
@@ -86,7 +87,6 @@ namespace Server.worker
 
         private void sendResults()
         {
-            WorkerCommunicator communicator = new WorkerCommunicator();
             TaskResult taskResult;
             while (true)
             {
@@ -101,7 +101,7 @@ namespace Server.worker
                     taskResultList.RemoveAt(0);
                 }
                 communicator.sendResultsToClient(taskResult);
-                communicator.notifyResultsSentToClientEvent(workerId,taskResult.SplitId);
+                communicator.notifyResultsSentToClientEvent(workerId,taskResult,this);
                 Console.WriteLine("result sent by " + workerId);
             }
         }
@@ -124,7 +124,6 @@ namespace Server.worker
                         continue;
                     }
                 }
-                WorkerCommunicator communicator = new WorkerCommunicator();
                 WorkerTaskMetadata workerTaskMetadata = communicator.getTaskFromClient(fileSplitMetadata);
                 mapTask.SplitId = fileSplitMetadata.SplitId;
                 mapTask.Hasthresholdreached = false;
@@ -151,13 +150,12 @@ namespace Server.worker
                         continue;
                     }
                 }
-                WorkerCommunicator communicator = new WorkerCommunicator();
                 communicator.sendStatusUpdatesToTracker(status);
             }
         }
 
 
-        private void addTaskToTaskResults(TaskResult taskResult)
+        public void addTaskToTaskResults(TaskResult taskResult)
         {
             lock (taskResultList)
             {

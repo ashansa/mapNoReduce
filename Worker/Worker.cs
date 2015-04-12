@@ -25,7 +25,7 @@ namespace PADIMapNoReduce
         WorkerTask workerTask;
         TrackerTask trackerTask;
         int workerId;
-        Dictionary<Int32,String> existingWorkerMap = new Dictionary<Int32,string>();
+        Dictionary<Int32, WorkerDetails> existingWorkerMap = new Dictionary<Int32, WorkerDetails>();
         String serviceUrl;
         bool isJobTracker;
 
@@ -46,7 +46,7 @@ namespace PADIMapNoReduce
             this.workerId = id;
         }
 
-        public Dictionary<Int32,String> ExistingWorkerList
+        public Dictionary<Int32,WorkerDetails> ExistingWorkerList
         {
             get { return existingWorkerMap; }
             set { existingWorkerMap = value; }
@@ -96,19 +96,25 @@ namespace PADIMapNoReduce
             CLIENT_URL = splitMetadata.ClientUrl;
             JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
             workerTask.addSplitToSplitList(splitMetadata);
-            Console.WriteLine("worker recieved the job details");
             //we don't block the job tracker as we execute task seperately     
         }
 
 
         public void checkHeartbeat()//job tracker will invoke this
         {
-
+            Console.WriteLine("heartbeat received by worker");
         }
         public bool suspendTask(int splitId)//job tracker will invoke this after certain slowness
         {
+            Console.WriteLine("one task suspended");
             return workerTask.suspendOrRemoveMapTask(splitId);
         }
+
+       public void removeFailedNode(int key){
+           if (existingWorkerMap.ContainsKey(key)) {
+               existingWorkerMap.Remove(key);
+           }
+       }
 
         #endregion
         #endregion
@@ -138,8 +144,8 @@ namespace PADIMapNoReduce
 
         public void receiveStatus(Status status)
         {
-            Console.WriteLine("result received " + status.PercentageCompleted + "%");
-            Common.Logger().LogInfo("Results received " + status.PercentageCompleted + "%", string.Empty, string.Empty);
+            /*Console.WriteLine("result received " + status.PercentageCompleted + "%");
+            Common.Logger().LogInfo("Results received " + status.PercentageCompleted + "%", string.Empty, string.Empty);*/
             trackerTask.updateStatus(status);
         }
 
@@ -150,7 +156,6 @@ namespace PADIMapNoReduce
              trackerTask.resultSentToClient(nodeId, splitId);
             if (trackerTask.isJobCompleted())
             {
-                Console.WriteLine("all splits are completed");
                 client.receiveJobCompletedNotification();
             }
         }
@@ -172,16 +177,17 @@ namespace PADIMapNoReduce
             WorkerCommunicator communicator = new WorkerCommunicator();
             this.WorkerId = workerMetadata.WorkerId;
             workerTask = new WorkerTask(WorkerId);
-            if (workerMetadata.EntryURL == null || workerMetadata.EntryURL == String.Empty)//this is the first worker
-            {
-                existingWorkerMap.Add(workerMetadata.WorkerId,workerMetadata.ServiceURL);
-            }
-            else//connect to entryWorker and get urlList
-            {
-                existingWorkerMap = communicator.getExistingWorkerURLList(workerMetadata.EntryURL);
-                //notify all others about entry
-                communicator.notifyExistingWorkers(workerId,workerMetadata.ServiceURL, existingWorkerMap);
-                existingWorkerMap.Add(workerMetadata.WorkerId,workerMetadata.ServiceURL);//add self
+
+                if (workerMetadata.EntryURL == null || workerMetadata.EntryURL == String.Empty)//this is the first worker
+                {
+                    addNewWorker(workerMetadata.WorkerId, workerMetadata.ServiceURL);
+                }
+                else//connect to entryWorker and get urlList
+                {
+                    existingWorkerMap = communicator.getExistingWorkerURLList(workerMetadata.EntryURL);
+                    //notify all others about entry
+                    communicator.notifyExistingWorkers(workerId, workerMetadata.ServiceURL, existingWorkerMap);
+                    addNewWorker(workerMetadata.WorkerId, workerMetadata.ServiceURL); //add self
             }
 
             startWorkerTasks();
@@ -209,12 +215,22 @@ namespace PADIMapNoReduce
             workerTask.slowWorkerThreads(seconds);
         }
 
-        public void addNewWorker(int nodeId,String newWorkerURL)
-        {
-            existingWorkerMap.Add(nodeId, newWorkerURL);
+        public void freezeWorker() {
+            RemotingServices.Disconnect(this);
+           
         }
 
-        public Dictionary<Int32,String> getExistingWorkers()
+        public void addNewWorker(int nodeId, String newWorkerURL)
+        {
+                WorkerDetails worker = new WorkerDetails();
+                worker.Nodeid = nodeId;
+                worker.Nodeurl = newWorkerURL;
+                worker.State = WorkerState.IDLE;
+                worker.ProcessedSplits = new List<int>();
+                existingWorkerMap.Add(nodeId, worker);
+        }
+
+        public Dictionary<Int32,WorkerDetails> getExistingWorkers()
         {
             return existingWorkerMap;
         }

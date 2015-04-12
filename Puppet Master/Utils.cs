@@ -21,7 +21,6 @@ namespace Puppet_Master
             switch (keyword)
             {
                 case "submit":
-                    Thread.Sleep(3000);
                     submitJobToClient(command);
                     break;
 
@@ -36,10 +35,22 @@ namespace Puppet_Master
                 case "sloww"://sloww 2 60
                     callWaitWorker(command);
                     break;
+
+                case "wait":
+                    waitPuppet(command);
+                    break;
+
                 default:
                     break;
 
             }
+        }
+
+        private void waitPuppet(string command)
+        {
+            string[] paramStr = command.Split(Constants.SPACE_CHAR);
+            int delayTime= Convert.ToInt16(paramStr[1]);
+            Thread.Sleep(delayTime);
         }
 
         private void callWaitWorker(string command)
@@ -47,7 +58,8 @@ namespace Puppet_Master
             string[] paramStr = command.Split(Constants.SPACE_CHAR);
             int workerId = Convert.ToInt16(paramStr[1]);
             int delayInSeconds = Convert.ToInt32(paramStr[2]);
-            puppet.callRemoteWaitWorker(workerId, delayInSeconds);
+            Thread thread = new Thread(() => puppet.callRemoteWaitWorker(workerId, delayInSeconds));
+            thread.Start();
         }
 
         public void executeScript(string[] scriptCommands)

@@ -143,7 +143,8 @@ namespace Server.worker
             {
                 hasthresholdreached = true;
                 WorkerCommunicator communicator = new WorkerCommunicator();
-                communicator.hasThresholdReached(workerId);
+                Thread thread = new Thread(() => communicator.hasThresholdReached(workerId));
+                thread.Start();
             }
 
             lock (StatusList)

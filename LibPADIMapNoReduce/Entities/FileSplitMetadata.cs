@@ -22,6 +22,7 @@ namespace PADIMapNoReduce
             this.clientUrl = clientUrl;
             this.jobTrackerUrl = jobTrackerUrl;
         }
+
         public int SplitId
         {
             get { return splitId; }

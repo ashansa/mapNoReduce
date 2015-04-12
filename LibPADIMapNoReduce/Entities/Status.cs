@@ -51,7 +51,6 @@ namespace PADIMapNoReduce
      INPROGRESS,
      COMPLETED,
      SUSPENDED,
-     FILES_SENT,
      NOT_SEND_TO_WORKER
     }
 }

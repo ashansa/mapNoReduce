@@ -39,14 +39,15 @@ namespace Puppet_Master
             set { puppetUrl = value; }
         }
         #region interface implementation
+        /*check whether u can do it in a thread*/
         public bool createLocalWorker(WorkerMetadata workerMetadata)
         {
             worker = new Worker(workerMetadata.WorkerId);
-            new Thread(delegate()
+           /* new Thread(delegate()
             {
                 worker.initWorker(workerMetadata);
-            }).Start();
-           // worker.initWorker(workerMetadata);
+            }).Start();*/
+            worker.initWorker(workerMetadata);
             return true;
         }
 

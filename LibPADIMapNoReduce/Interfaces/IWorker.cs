@@ -12,7 +12,8 @@ namespace PADIMapNoReduce
       void checkHeartbeat();
       bool suspendTask(int splitId);//job tracker invoke this to suspend a job on worker
       void addNewWorker(int workerId,String newWorkerURL) ;
-      Dictionary<Int32,String> getExistingWorkers();
+      Dictionary<Int32,WorkerDetails> getExistingWorkers();
       Boolean initWorker(WorkerMetadata workerMetadata);
+      void removeFailedNode(int failedId);
     }
 }

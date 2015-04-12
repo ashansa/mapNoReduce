@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -47,7 +48,9 @@ namespace Puppet_Master
 
         private void button1_Click(object sender, EventArgs e)
         {
-            utils.executeCommand(txt_command.Text);
+            Thread thread = new Thread(() => utils.executeCommand(txt_command.Text));
+            thread.Start();
+            
         }
 
         // browse file button
@@ -69,7 +72,8 @@ namespace Puppet_Master
             else
             {
                 scriptCommands = File.ReadAllLines(scriptPath);
-                utils.executeScript(scriptCommands);
+                Thread thread = new Thread(() => utils.executeScript(scriptCommands));
+                thread.Start();
             }
         }
 

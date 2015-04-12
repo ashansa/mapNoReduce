@@ -23,34 +23,6 @@ namespace PADIMapNoReduce
         IWorkerTracker contactingWorker;
         String mapperName;
 
-       /* static void Main()
-        {
-            //call submit method directly
-            Console.WriteLine("starting service");
-            new Client(Constants.CLIENT_URL).submitTask(@"C:\Users\ashansa\Documents\tmp\input.txt", @"C:\Users\ashansa\Documents\tmp\out", 3, null);
-            Console.ReadLine();
-        }
-
-        public Client(string url)
-        {
-            this.url = url;
-            int clientPort = Int16.Parse(ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_URL]);
-            BinaryServerFormatterSinkProvider provider = new BinaryServerFormatterSinkProvider();
-
-            IDictionary props = new Hashtable();
-            props["port"] = clientPort;
-            props["name"] = "client";
-            props["timeout"] = 10000; // in milliseconds
-            TcpChannel channel = new TcpChannel(props, null, provider);
-            ChannelServices.RegisterChannel(channel, true);
-            RemotingServices.Marshal(this, "Client", typeof(Client));
-
-            contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), "tcp://localhost:10001/Worker");
-            // RemotingConfiguration.RegisterWellKnownServiceType(typeof(Client),
-               //  "Client", WellKnownObjectMode.Singleton);
-        }
-    */
-
         public void initClient()
         {
             this.url = ConfigurationManager.AppSettings[Constants.APPSETT_CLIENT_URL];
@@ -72,26 +44,6 @@ namespace PADIMapNoReduce
             JobMetadata jobDetails = new JobMetadata(input.Length, splits, url);
             contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entryUrl);
             contactingWorker.receiveJobRequest(jobDetails);//calling the job tracker
-
-
-           /* int length = input.Length;
-            for (int i = 0; i < splits; i++)
-            {
-                int start = i * length / splits;
-                int end = start + length / splits;
-                //TODO give client url
-                FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, null);
-                WorkerTaskMetadata workerData = receiveTaskRequest(metadata);
-                Console.WriteLine("+====================================" + i);
-
-
-                byte[] result = System.Text.Encoding.UTF8.GetBytes(workerData.Chunk);
-                TaskResult taskResult = new TaskResult(result, i);
-                receiveCompletedTask(taskResult);
-            }*/
-            //splitFile(inputFilePath, splits);
-
-            //////////////////
         }
 
         public WorkerTaskMetadata receiveTaskRequest(FileSplitMetadata splitMetadata)
@@ -191,28 +143,6 @@ namespace PADIMapNoReduce
            
             return split;
         }
-
-        /* DECIDE WHETHER CLIENT DECIDE OR TRACKER INFORM
-        public void receiveWorkCompleteStatus()
-        {
-        }*/
-
-
-        /* NO NEED TO COMBINE 
-           private void combineResults()
-           {
-               //////////////// temp setting output dir to test with others commented
-               outputDir = @"C:\Users\ashansa\Documents\tmp\out";
-               //combine results and clear output dir
-               string[] resultFileParts = Directory.GetFiles(outputDir);
-
-               Array.Sort(resultFileParts);
-               foreach (string s in resultFileParts)
-               {
-                   Console.WriteLine(s);
-               }
-               Console.ReadLine();
-           }*/
 
         #region specific
         //to avoid expiring objects within 20 minutes
