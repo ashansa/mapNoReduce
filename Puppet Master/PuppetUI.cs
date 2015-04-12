@@ -76,15 +76,5 @@ namespace Puppet_Master
                 thread.Start();
             }
         }
-
-        private void btn_Status_Click(object sender, EventArgs e)
-        {
-            utils.executeCommand("status");
-        }
-
-        private void button3_Click_1(object sender, EventArgs e)
-        {
-            utils.executeCommand(txt_slow_worker.Text);
-        }
     }
 }
