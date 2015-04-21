@@ -47,7 +47,7 @@ namespace Server.worker
         {
             get { return statusList; }
         }
-    
+
         List<KeyValuePair<string, string>> result;
 
         static int keyValuePairComparator(KeyValuePair<string, String> a, KeyValuePair<string, String> b)
@@ -56,37 +56,29 @@ namespace Server.worker
         }
 
 
-        public bool runMapperForLine(byte[] code, string className, String line)
+        public bool runMapperForLine(Type type, object mapperObj, String line)
         {
-            Assembly assembly = Assembly.Load(code);
-            // Walk through each type in the assembly looking for our class
-            foreach (Type type in assembly.GetTypes())
+            try
             {
-                if (type.IsClass == true)
-                {
-                    if (type.FullName.EndsWith("." + className))
-                    {
-                        // create an instance of the object
-                        object ClassObj = Activator.CreateInstance(type);
+                // Dynamically Invoke the method
+                object[] args = new object[] { line };
+                IList resultObject = (IList)type.InvokeMember("Map",
+                 BindingFlags.Default | BindingFlags.InvokeMethod,
+                      null,
+                      mapperObj,
+                      args);
+                result.AddRange((IList<KeyValuePair<string, string>>)resultObject);
 
-                        // Dynamically Invoke the method
-                        object[] args = new object[] { line };
-                        IList resultObject = (IList)type.InvokeMember("Map",
-                         BindingFlags.Default | BindingFlags.InvokeMethod,
-                              null,
-                              ClassObj,
-                              args);
-                        result.AddRange((IList<KeyValuePair<string, string>>)resultObject);
-
-                        return true;
-                    }
-                }
+                return true;
             }
-            throw (new System.Exception("could not invoke method"));
+            catch (Exception ex)
+            {
+                throw (new System.Exception("could not invoke method"));
+            }
             return false;
         }
 
-        internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata, FileSplitMetadata splitMetaData,int workerId)
+        internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata, FileSplitMetadata splitMetaData, int workerId)
         {
             String chunk = workerTaskMetadata.Chunk;
             //long lineNumber = splitMetaData.StartPosition;
@@ -94,6 +86,23 @@ namespace Server.worker
             long totalSize = chunk.Length * sizeof(Char);
             string line;
             result = new List<KeyValuePair<string, string>>();
+            Assembly assembly = Assembly.Load(workerTaskMetadata.Code);
+            Type classType=null;
+            object mapperObj=null;
+            // Walk through each type in the assembly looking for our class
+            foreach (Type type in assembly.GetTypes())
+            {
+                if (type.IsClass == true)
+                {
+                    if (type.FullName.EndsWith("." + workerTaskMetadata.MapperClassName))
+                    {
+                        // create an instance of the object
+                        classType = type;
+                        mapperObj = Activator.CreateInstance(classType);
+                    }
+                }
+            }
+
             using (StringReader reader = new System.IO.StringReader(chunk))
             {
                 while (true)
@@ -103,9 +112,9 @@ namespace Server.worker
                     {
                         if (!IsMapSuspended)
                         {
-                            runMapperForLine(workerTaskMetadata.Code, workerTaskMetadata.MapperClassName, line);
-                            bytesProcessed += line.Length * sizeof(char)+(Environment.NewLine.Length*sizeof(Char));
-                            setTaskStatus(splitMetaData,totalSize, bytesProcessed,workerId);
+                            runMapperForLine(classType, mapperObj, line);
+                            bytesProcessed += line.Length * sizeof(char) + (Environment.NewLine.Length * sizeof(Char));
+                            setTaskStatus(splitMetaData, totalSize, bytesProcessed, workerId);
                         }
                         else
                         {
@@ -126,7 +135,7 @@ namespace Server.worker
             }
         }
 
-        private void setTaskStatus(FileSplitMetadata splitMetaData,long totalSize, long bytesProcessed,int workerId)
+        private void setTaskStatus(FileSplitMetadata splitMetaData, long totalSize, long bytesProcessed, int workerId)
         {
             double percentage = 100 * (bytesProcessed / (double)totalSize);
             Status statusToSet = new Status();
@@ -139,7 +148,7 @@ namespace Server.worker
             CurrentStatus = statusToSet;
 
 
-            if (!hasthresholdreached && percentage>Constants.maxThreshold)//send notification when it first reach threshold
+            if (!hasthresholdreached && percentage > Constants.maxThreshold)//send notification when it first reach threshold
             {
                 hasthresholdreached = true;
                 WorkerCommunicator communicator = new WorkerCommunicator();
@@ -154,7 +163,7 @@ namespace Server.worker
                     StatusList.Add(statusToSet);
 
                     if (StatusList.Count == 1)
-                        Monitor.Pulse(StatusList);          
+                        Monitor.Pulse(StatusList);
                 }
             }
 

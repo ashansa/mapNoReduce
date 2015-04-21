@@ -18,9 +18,18 @@ namespace Puppet_Master
     class PuppetService : MarshalByRefObject, IPuppetMaster
     {
         String puppetUrl;
-        static Worker worker;
         List<String> puppetUrlList = new List<string>();
         Dictionary<int, string> workerPuppetMap = new Dictionary<int, string>();
+
+
+        Dictionary<string, int> urlIdMap = new Dictionary<string, int>();
+        Dictionary<int, Worker> workerIdMap = new Dictionary<int, Worker>();
+
+        public Dictionary<string, int> UrlIdMap
+        {
+            get { return urlIdMap; }
+            set { urlIdMap = value; }
+        } 
 
         public Dictionary<int, string> WorkerPuppetMap
         {
@@ -41,9 +50,11 @@ namespace Puppet_Master
         #region interface implementation
         /*check whether u can do it in a thread*/
         public bool createLocalWorker(WorkerMetadata workerMetadata)
-        {
-            worker = new Worker(workerMetadata.WorkerId);
-           /* new Thread(delegate()
+        {         
+            Console.WriteLine("service url is " + workerMetadata.ServiceURL);
+            Worker  worker = new Worker(workerMetadata.WorkerId);
+            workerIdMap.Add(workerMetadata.WorkerId, worker);
+          /*  new Thread(delegate()
             {
                 worker.initWorker(workerMetadata);
             }).Start();*/
@@ -51,17 +62,21 @@ namespace Puppet_Master
             return true;
         }
 
-        public void slowWorker(int seconds)
+        public void slowWorker(int seconds,int workerId)
         {
+            Worker worker=workerIdMap[workerId];
             worker.slowWorker(seconds);
         }
 
        public void displayStatus()
         {
-            new Thread(delegate()
+            foreach ( KeyValuePair<Int32, Worker> entry in workerIdMap)
             {
-                worker.displayStatus();
-            }).Start();
+                new Thread(delegate()
+                {
+                    entry.Value.displayStatus();
+                }).Start();
+            }
         }
         #endregion
 
@@ -116,7 +131,7 @@ namespace Puppet_Master
             IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
                 typeof(IPuppetMaster),
            puppetToConnect);
-           puppet.slowWorker(seconds);
+           puppet.slowWorker(seconds,workerId);
         }
         #endregion
         #region specific

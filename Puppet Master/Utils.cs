@@ -21,10 +21,13 @@ namespace Puppet_Master
             switch (keyword)
             {
                 case "submit":
+                    Console.WriteLine("job is going to be submitted");
                     submitJobToClient(command);
                     break;
 
                 case "worker":
+                   /* Thread thread = new Thread(() =>  createWorker(command));
+                    thread.Start();*/
                     createWorker(command);
                     break;
 
@@ -50,7 +53,7 @@ namespace Puppet_Master
         {
             string[] paramStr = command.Split(Constants.SPACE_CHAR);
             int delayTime= Convert.ToInt16(paramStr[1]);
-            Thread.Sleep(delayTime);
+            Thread.Sleep(delayTime*1000);
         }
 
         private void callWaitWorker(string command)
@@ -80,13 +83,16 @@ namespace Puppet_Master
             WorkerMetadata workerMetadata = new WorkerMetadata();
             workerMetadata.WorkerId = Convert.ToInt16(splits[1]);
             workerMetadata.PuppetRUL = splits[2];
-            workerMetadata.ServiceURL = splits[3];
-
-            if (splits.Length == 5 && splits[4] != string.Empty)
-                workerMetadata.EntryURL = splits[4];
 
             //Create worker-Id puppet map to use with wait, freeze, unfreeze etc
             puppet.WorkerPuppetMap.Add(workerMetadata.WorkerId, workerMetadata.PuppetRUL);
+            puppet.UrlIdMap.Add(splits[3], workerMetadata.WorkerId);/* to fix issue of same puppet->multiple workers */
+
+            if (splits.Length == 5 && splits[4] != string.Empty)
+                workerMetadata.EntryURL = splits[4]+puppet.UrlIdMap[splits[4]];
+
+            workerMetadata.ServiceURL = splits[3] + workerMetadata.WorkerId;
+
             puppet.createWorker(workerMetadata);
         }
 
@@ -98,7 +104,9 @@ namespace Puppet_Master
                 client.initClient();
             }
             String[] pairs = command.Split(Constants.SPACE_CHAR);
-            client.submitTask(pairs[1], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5], pairs[6]);
+
+            //first param to fix issue of one puppet->multiple workers
+            client.submitTask(pairs[1] + puppet.UrlIdMap[pairs[1]], pairs[2], pairs[3], Convert.ToInt16(pairs[4]), pairs[5], pairs[6]);
         }
 
         private void callDisplayStatus()

@@ -9,6 +9,6 @@ namespace PADIMapNoReduce.Interfaces
     {
        bool createLocalWorker(WorkerMetadata workerMetadata);
        void displayStatus();
-       void slowWorker(int seconds);
+       void slowWorker(int seconds,int id);
     }
 }

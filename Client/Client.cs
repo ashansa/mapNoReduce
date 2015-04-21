@@ -22,6 +22,8 @@ namespace PADIMapNoReduce
         private string outputDir;
         IWorkerTracker contactingWorker;
         String mapperName;
+        DateTime startTime;
+        DateTime endTime;
 
         public void initClient()
         {
@@ -36,6 +38,7 @@ namespace PADIMapNoReduce
 
         public void submitTask(String entryUrl,string inputFile, string outputDir, int splits, string mapperFunctionName,string dllPath)
         {
+            startTime = DateTime.Now;
             this.inputFilePath = inputFile;
             this.outputDir = outputDir;
             this.mapperName = mapperFunctionName;
@@ -76,6 +79,9 @@ namespace PADIMapNoReduce
         public void receiveJobCompletedNotification()
         {
             //TODO: notify UI???
+            endTime = DateTime.Now;
+            var diff = endTime.Subtract(startTime);
+            String difference = String.Format("{0}:{1}:{2}", diff.Hours, diff.Minutes, diff.Seconds);
             ClientApp clientapp = new ClientApp();
             new Thread(delegate()
            {
@@ -85,7 +91,7 @@ namespace PADIMapNoReduce
               ClientApp.printMsg eve = new ClientApp.printMsg(clientapp.addMessage);
                 try
                 {
-                    clientapp.Invoke(eve, new Object[] { "job completed" });
+                    clientapp.Invoke(eve, new Object[] { "job completed within "+difference });
                     // form1.Invoke(new ChatApp.Form1.printMsg(form1.addMessage), new Object[] { msg });
                 }
                 catch (Exception ex)
@@ -138,9 +144,8 @@ namespace PADIMapNoReduce
             fs.Read(target, 0, (int)(endByte+additional  - startByte));
             fs.Close();
             //string split = new UnicodeEncoding().GetString(target);
+
             string split = System.Text.Encoding.UTF8.GetString(target);
-            split = split.Trim();
-           
             return split;
         }
 
