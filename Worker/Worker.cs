@@ -19,7 +19,6 @@ namespace PADIMapNoReduce
     {
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
-        public static Boolean IS_WORKER_FREEZED = false;
         IClient client;
         //TODO: change this to get from puppet
         WorkerTask workerTask;
@@ -91,23 +90,16 @@ namespace PADIMapNoReduce
 
         public void receiveTask(FileSplitMetadata splitMetadata)//job tracker will invoke this
         {
-            if (!IS_WORKER_FREEZED)
-            {
                 CLIENT_URL = splitMetadata.ClientUrl;
                 JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
                 workerTask.addSplitToSplitList(splitMetadata);
                 //we don't block the job tracker as we execute task seperately 
-            }
-            else
-            {
-                throw new RemoteComException();
-            }
         }
 
 
         public void checkHeartbeat()//job tracker will invoke this
         {
-            if (!IS_WORKER_FREEZED)
+            if (!WorkerTask.IS_WORKER_FREEZED)
             {
                 Console.WriteLine("heartbeat received by worker");
             }
@@ -228,15 +220,15 @@ namespace PADIMapNoReduce
         }
 
         public void freezeWorker() {
-            IS_WORKER_FREEZED = true;
+            WorkerTask.IS_WORKER_FREEZED = true;
             Console.WriteLine("going to freeze "+workerId);
         }
 
         public void unfreezeWorker()
         {
+            WorkerTask.IS_WORKER_FREEZED= false;
+            workerTask.checkWorkerFreezed();
             Console.WriteLine("going to unfreeze");
-
- 
         }
 
         public void addNewWorker(int nodeId, String newWorkerURL)

@@ -115,13 +115,16 @@ namespace Server.worker
 
         internal void hasThresholdReached(int nodeId)
         {
-            if (trackerProxy == null)
+            if (!WorkerTask.IS_WORKER_FREEZED)
             {
-                trackerProxy = (IWorkerTracker)Activator.GetObject(
-                            typeof(IWorkerTracker),
-                            Worker.JOBTRACKER_URL);
+                if (trackerProxy == null)
+                {
+                    trackerProxy = (IWorkerTracker)Activator.GetObject(
+                                typeof(IWorkerTracker),
+                                Worker.JOBTRACKER_URL);
+                }
+                trackerProxy.readyForNewTask(nodeId);
             }
-            trackerProxy.readyForNewTask(nodeId);
         }
     }
 }

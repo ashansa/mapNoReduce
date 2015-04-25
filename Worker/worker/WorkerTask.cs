@@ -11,6 +11,7 @@ namespace Server.worker
     public class WorkerTask
     {
         int workerId;
+        public static Boolean IS_WORKER_FREEZED = false;
         List<FileSplitMetadata> splitMetadataList = new List<FileSplitMetadata>();
         List<TaskResult> taskResultList = new List<TaskResult>();
         Thread splitProcessor;
@@ -18,7 +19,7 @@ namespace Server.worker
         Thread statusUpdateNotificationThread;
         MapTask mapTask = new MapTask();
         WorkerCommunicator communicator = new WorkerCommunicator();
-
+        object freezeLock = new object();
         public WorkerTask(int workerId)
         {
            this.workerId = workerId;
@@ -112,19 +113,20 @@ namespace Server.worker
             FileSplitMetadata fileSplitMetadata = null;
             while (true)
             {
-                lock (splitMetadataList)
-                {
-                    if (splitMetadataList.Count > 0)
+                checkWorkerFreezed();
+                    lock (splitMetadataList)
                     {
-                        fileSplitMetadata = splitMetadataList[0];
-                        splitMetadataList.RemoveAt(0);
+                        if (splitMetadataList.Count > 0)
+                        {
+                            fileSplitMetadata = splitMetadataList[0];
+                            splitMetadataList.RemoveAt(0);
+                        }
+                        else
+                        {
+                            Monitor.Wait(splitMetadataList);
+                            continue;
+                        }
                     }
-                    else
-                    {
-                        Monitor.Wait(splitMetadataList);
-                        continue;
-                    }
-                }
                 WorkerTaskMetadata workerTaskMetadata = communicator.getTaskFromClient(fileSplitMetadata);
                 mapTask.SplitId = fileSplitMetadata.SplitId;
                 mapTask.Hasthresholdreached = false;
@@ -134,11 +136,13 @@ namespace Server.worker
                 addTaskToTaskResults(taskResult);
             }
         }
+
         private void sendStatusUpdates()
         {
             Status status;
             while (true)
             {
+                checkWorkerFreezed();
                 lock (mapTask.StatusList)
                 {
                     if (mapTask.StatusList.Count > 0)
@@ -208,5 +212,25 @@ namespace Server.worker
             }
             return false;
         }
+
+        public void checkWorkerFreezed() {
+           
+            lock (freezeLock)
+                {
+                    if (IS_WORKER_FREEZED)
+                    {
+                        Monitor.Wait(freezeLock);
+                    }
+                    else
+                    {
+                        Monitor.PulseAll(freezeLock);
+                    }
+                }
+            }
+
+
+      
+        }
+
     }
-}
+
