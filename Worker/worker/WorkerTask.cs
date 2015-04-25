@@ -79,6 +79,7 @@ namespace Server.worker
         /*Depricated but seems ok*/
         public void slowWorkerThreads(int seconds)
         {
+            Console.WriteLine("worker is going to slow");
             splitProcessor.Suspend();
             Thread.Sleep(seconds * 1000);
             splitProcessor.Resume();

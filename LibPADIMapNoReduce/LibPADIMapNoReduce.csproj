@@ -63,6 +63,7 @@
     <Compile Include="Entities\WorkerTaskMetadata.cs" />
     <Compile Include="Logger\ILogger.cs" />
     <Compile Include="Logger\Log4NetLogger.cs" />
+    <Compile Include="utils\RemoteComException.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

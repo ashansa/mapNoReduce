@@ -10,5 +10,7 @@ namespace PADIMapNoReduce.Interfaces
        bool createLocalWorker(WorkerMetadata workerMetadata);
        void displayStatus();
        void slowWorker(int seconds,int id);
+       void freezeWorker(int workerId);
+       void unfreezeWorker(int workerId);
     }
 }

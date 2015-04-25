@@ -68,6 +68,17 @@ namespace Puppet_Master
             worker.slowWorker(seconds);
         }
 
+        public void freezeWorker(int workerId)
+        {
+            Worker worker = workerIdMap[workerId];
+            worker.freezeWorker();
+        }
+
+        public void unfreezeWorker(int workerId) {
+            Worker worker = workerIdMap[workerId];
+            worker.unfreezeWorker();
+        }
+
        public void displayStatus()
         {
             foreach ( KeyValuePair<Int32, Worker> entry in workerIdMap)
@@ -133,6 +144,23 @@ namespace Puppet_Master
            puppetToConnect);
            puppet.slowWorker(seconds,workerId);
         }
+
+        internal void callRemoteFreezeWorker(int workerId){
+            String puppetToConnect = workerPuppetMap[workerId];
+            IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
+                typeof(IPuppetMaster),
+           puppetToConnect);
+            puppet.freezeWorker(workerId);
+        }
+
+       internal void callRemoteUnfreezeWorker(int workerId){
+           String puppetToConnect = workerPuppetMap[workerId];
+           IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
+               typeof(IPuppetMaster),
+          puppetToConnect);
+           puppet.unfreezeWorker(workerId);
+        }
+
         #endregion
         #region specific
         public override object InitializeLifetimeService()

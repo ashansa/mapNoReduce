@@ -346,6 +346,7 @@ namespace Server.tracker
                     taskList[splitMetadata.SplitId].StatusType = StatusType.NOT_SEND_TO_WORKER;
                     Common.Logger().LogError("Unable to send split " + splitMetadata.SplitId + " to node " + nodeId, string.Empty, string.Empty);
                     Common.Logger().LogError(ex.Message, string.Empty, string.Empty);
+                    throw ex;
                 }
             }
 

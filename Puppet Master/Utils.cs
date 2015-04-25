@@ -43,10 +43,32 @@ namespace Puppet_Master
                     waitPuppet(command);
                     break;
 
+                case "freeze":
+                    freezeWorker(command);
+                    break;
+
+                case "unfreeze":
+                    unFreezeWorker(command);
+                    break;
+
                 default:
                     break;
 
             }
+        }
+
+        private void unFreezeWorker(string command)
+        {
+            string[] paramStr = command.Split(Constants.SPACE_CHAR);
+            int workerId = Convert.ToInt16(paramStr[1]);
+            puppet.callRemoteUnfreezeWorker(workerId);
+        }
+
+        private void freezeWorker(string command)
+        {
+            string[] paramStr = command.Split(Constants.SPACE_CHAR);
+            int workerId = Convert.ToInt16(paramStr[1]);
+            puppet.callRemoteFreezeWorker(workerId);
         }
 
         private void waitPuppet(string command)

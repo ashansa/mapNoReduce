@@ -19,7 +19,7 @@ namespace PADIMapNoReduce
     {
         public static string JOBTRACKER_URL;
         public static string CLIENT_URL;
-
+        public static Boolean IS_WORKER_FREEZED = false;
         IClient client;
         //TODO: change this to get from puppet
         WorkerTask workerTask;
@@ -28,7 +28,6 @@ namespace PADIMapNoReduce
         Dictionary<Int32, WorkerDetails> existingWorkerMap = new Dictionary<Int32, WorkerDetails>();
         String serviceUrl;
         bool isJobTracker;
-
         public bool IsJobTracker
         {
             get { return isJobTracker; }
@@ -67,9 +66,8 @@ namespace PADIMapNoReduce
             props["port"] =Convert.ToInt32( portNamePair[0]);
             props["name"] = "worker"+workerId;
            // props["timeout"] = 100000; // in milliseconds
-            TcpChannel channel = new TcpChannel(props, null, provider);
+           TcpChannel channel = new TcpChannel(props, null, provider);
             ChannelServices.RegisterChannel(channel, true);
-
             RemotingServices.Marshal(this, portNamePair[1],typeof(Worker));
 
             //TODO: start tasks for jobtracker
@@ -93,16 +91,30 @@ namespace PADIMapNoReduce
 
         public void receiveTask(FileSplitMetadata splitMetadata)//job tracker will invoke this
         {
-            CLIENT_URL = splitMetadata.ClientUrl;
-            JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
-            workerTask.addSplitToSplitList(splitMetadata);
-            //we don't block the job tracker as we execute task seperately     
+            if (!IS_WORKER_FREEZED)
+            {
+                CLIENT_URL = splitMetadata.ClientUrl;
+                JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
+                workerTask.addSplitToSplitList(splitMetadata);
+                //we don't block the job tracker as we execute task seperately 
+            }
+            else
+            {
+                throw new RemoteComException();
+            }
         }
 
 
         public void checkHeartbeat()//job tracker will invoke this
         {
-            Console.WriteLine("heartbeat received by worker");
+            if (!IS_WORKER_FREEZED)
+            {
+                Console.WriteLine("heartbeat received by worker");
+            }
+            else
+            {
+                throw new RemoteComException();
+            }
         }
         public bool suspendTask(int splitId)//job tracker will invoke this after certain slowness
         {
@@ -216,8 +228,15 @@ namespace PADIMapNoReduce
         }
 
         public void freezeWorker() {
-            RemotingServices.Disconnect(this);
-           
+            IS_WORKER_FREEZED = true;
+            Console.WriteLine("going to freeze "+workerId);
+        }
+
+        public void unfreezeWorker()
+        {
+            Console.WriteLine("going to unfreeze");
+
+ 
         }
 
         public void addNewWorker(int nodeId, String newWorkerURL)

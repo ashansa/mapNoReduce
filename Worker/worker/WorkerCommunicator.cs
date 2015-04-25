@@ -93,24 +93,25 @@ namespace Server.worker
 
         /*important event so if not send add to list back*/
         internal void notifyResultsSentToClientEvent(int workerId, TaskResult taskResult, WorkerTask workerTask)
-        {
-            try
-            {
-                if (trackerProxy == null)
+        {      
+                try
                 {
-                    trackerProxy = (IWorkerTracker)Activator.GetObject(
-                               typeof(IWorkerTracker),
-                               Worker.JOBTRACKER_URL);
+                    if (trackerProxy == null)
+                    {
+                        trackerProxy = (IWorkerTracker)Activator.GetObject(
+                                   typeof(IWorkerTracker),
+                                   Worker.JOBTRACKER_URL);
+                    }
+                    trackerProxy.taskCompleted(workerId, taskResult.SplitId);
                 }
-                trackerProxy.taskCompleted(workerId, taskResult.SplitId);
+                catch (Exception ex)
+                {
+                    workerTask.addTaskToTaskResults(taskResult);
+                    Common.Logger().LogInfo("exception thrown while sending copleted event ", string.Empty, string.Empty);
+                    Common.Logger().LogInfo(ex.Message, string.Empty, string.Empty);
+                }
             }
-            catch (Exception ex)
-            {
-                workerTask.addTaskToTaskResults(taskResult);
-                Common.Logger().LogInfo("exception thrown while sending copleted event ", string.Empty, string.Empty);
-                Common.Logger().LogInfo(ex.Message, string.Empty, string.Empty);
-            }
-        }
+
 
         internal void hasThresholdReached(int nodeId)
         {
