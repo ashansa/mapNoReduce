@@ -130,6 +130,7 @@ namespace Server.worker
                 mapTask.Hasthresholdreached = false;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata,workerId);
                 //communicator.notifyTaskCompletedEvent(workerId,fileSplitMetadata.SplitId);
+                if(taskResult!=null)
                 addTaskToTaskResults(taskResult);
             }
         }

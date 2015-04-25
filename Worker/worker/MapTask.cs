@@ -87,8 +87,8 @@ namespace Server.worker
             string line;
             result = new List<KeyValuePair<string, string>>();
             Assembly assembly = Assembly.Load(workerTaskMetadata.Code);
-            Type classType=null;
-            object mapperObj=null;
+            Type classType = null;
+            object mapperObj = null;
             // Walk through each type in the assembly looking for our class
             foreach (Type type in assembly.GetTypes())
             {
@@ -120,7 +120,7 @@ namespace Server.worker
                         {
                             //clear the results and wait for next map
                             result = new List<KeyValuePair<string, string>>();
-                            IsMapSuspended = false;
+                            break;
                         }
                     }
                     else
@@ -130,8 +130,13 @@ namespace Server.worker
                 }
                 //Console.WriteLine("total sequences" + lineNumber);
                 ////send complete status
-
-                return createTaskResultBoject(splitMetaData.SplitId);
+                if (!isMapSuspended)
+                    return createTaskResultBoject(splitMetaData.SplitId);
+                else
+                {
+                    isMapSuspended = false;
+                    return null;
+                }
             }
         }
 
