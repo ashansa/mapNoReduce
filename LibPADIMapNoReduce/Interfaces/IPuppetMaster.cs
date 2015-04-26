@@ -12,5 +12,7 @@ namespace PADIMapNoReduce.Interfaces
        void slowWorker(int seconds,int id);
        void freezeWorker(int workerId);
        void unfreezeWorker(int workerId);
+       void freezeTracker(int trackerId);
+       void unfreezeTracker(int trackerId);
     }
 }

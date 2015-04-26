@@ -79,6 +79,18 @@ namespace Puppet_Master
             worker.unfreezeWorker();
         }
 
+        public void freezeTracker(int trackerId)
+        {
+            Worker worker = workerIdMap[trackerId];
+            worker.freezeTracker();
+        }
+
+        public void unfreezeTracker(int trackerId)
+        {
+            Worker worker = workerIdMap[trackerId];
+            worker.unfreezeTracker();
+        }
+
        public void displayStatus()
         {
             foreach ( KeyValuePair<Int32, Worker> entry in workerIdMap)
@@ -160,6 +172,24 @@ namespace Puppet_Master
           puppetToConnect);
            puppet.unfreezeWorker(workerId);
         }
+
+       internal void callRemoteFreezeTracker(int workerId)
+       {
+           String puppetToConnect = workerPuppetMap[workerId];
+           IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
+               typeof(IPuppetMaster),
+          puppetToConnect);
+           puppet.freezeTracker(workerId);
+       }
+
+       internal void callRemoteUnfreezeTracker(int trackerId)
+       {
+           String puppetToConnect = workerPuppetMap[trackerId];
+           IPuppetMaster puppet = (IPuppetMaster)Activator.GetObject(
+               typeof(IPuppetMaster),
+          puppetToConnect);
+           puppet.unfreezeTracker(trackerId);
+       }
 
         #endregion
         #region specific

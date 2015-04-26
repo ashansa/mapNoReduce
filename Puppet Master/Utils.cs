@@ -43,18 +43,40 @@ namespace Puppet_Master
                     waitPuppet(command);
                     break;
 
-                case "freeze":
+                case "freezew":
                     freezeWorker(command);
                     break;
 
-                case "unfreeze":
+                case "unfreezew":
                     unFreezeWorker(command);
+                    break;
+
+                case "freezec":
+                    freezeTracker(command);
+                    break;
+
+                case "unfreezec":
+                    unfreezeTracker(command);
                     break;
 
                 default:
                     break;
 
             }
+        }
+
+        private void unfreezeTracker(string command)
+        {
+            string[] paramStr = command.Split(Constants.SPACE_CHAR);
+            int trackerId = Convert.ToInt16(paramStr[1]);
+            puppet.callRemoteUnfreezeTracker(trackerId);
+        }
+
+        private void freezeTracker(string command)
+        {
+            string[] paramStr = command.Split(Constants.SPACE_CHAR);
+            int trackerId = Convert.ToInt16(paramStr[1]);
+            puppet.callRemoteFreezeTracker(trackerId);
         }
 
         private void unFreezeWorker(string command)

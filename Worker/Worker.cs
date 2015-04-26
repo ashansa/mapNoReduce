@@ -247,6 +247,17 @@ namespace PADIMapNoReduce
             workerTask.checkWorkerFreezed();
         }
 
+        public void freezeTracker()
+        {
+            Console.WriteLine("tracker has freezed");
+        }
+
+        public void unfreezeTracker()
+        {
+            Console.WriteLine("tracker unfreezed");
+            Console.WriteLine("current tracker URL is " + JOBTRACKER_URL);
+        }
+
         public void addNewWorker(int nodeId, String newWorkerURL)
         {
                 WorkerDetails worker = new WorkerDetails();
