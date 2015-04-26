@@ -126,5 +126,17 @@ namespace Server.worker
                 trackerProxy.readyForNewTask(nodeId);
             }
         }
+
+        internal Dictionary<StatusType, List<int>> notifyTrackerOnUnfreeze(Dictionary<StatusType, List<int>> freezedWorkerStatus, int nodeId,string nodeURL)
+        {
+            if (trackerProxy == null)
+            {
+                trackerProxy = (IWorkerTracker)Activator.GetObject(
+                            typeof(IWorkerTracker),
+                            Worker.JOBTRACKER_URL);
+            }
+           Dictionary<StatusType, List<int>> updatedStatus= trackerProxy.receiveFreezedWorkerStatus(freezedWorkerStatus,nodeId,nodeURL);
+           return updatedStatus;
+        }
     }
 }

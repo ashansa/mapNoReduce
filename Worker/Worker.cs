@@ -120,6 +120,11 @@ namespace PADIMapNoReduce
            }
        }
 
+       public void addUnfreezedNode(int nodeId, string nodeURL)
+       {
+           addNewWorker(nodeId, nodeURL);
+       }
+
         #endregion
         #endregion
 
@@ -169,6 +174,12 @@ namespace PADIMapNoReduce
             trackerTask.readyForNewTask(nodeId);
         }
 
+        public Dictionary<StatusType, List<int>> receiveFreezedWorkerStatus(Dictionary<StatusType, List<int>> freezedWorkerStatus, int nodeId,String nodeURL)
+        {
+            Dictionary<StatusType, List<int>> statusToWorker = trackerTask.getStatusForWorker(freezedWorkerStatus,nodeId,nodeURL);
+            return statusToWorker;
+
+        }
         #endregion
 
         #region services exposed to puppet
@@ -226,9 +237,14 @@ namespace PADIMapNoReduce
 
         public void unfreezeWorker()
         {
-            WorkerTask.IS_WORKER_FREEZED= false;
-            workerTask.checkWorkerFreezed();
             Console.WriteLine("going to unfreeze");
+            WorkerTask.IS_WORKER_FREEZED= false;
+            WorkerCommunicator communicator = new WorkerCommunicator();
+            Dictionary<StatusType, List<Int32>> freezedWorkerStatus = workerTask.getStatusOnFreezed();
+            Dictionary<StatusType, List<Int32>> updatedStatus=communicator.notifyTrackerOnUnfreeze(freezedWorkerStatus,workerId,serviceUrl);
+            workerTask.updateDataStructures(updatedStatus);
+            /*this should happen after getting all major details*/
+            workerTask.checkWorkerFreezed();
         }
 
         public void addNewWorker(int nodeId, String newWorkerURL)
@@ -253,6 +269,7 @@ namespace PADIMapNoReduce
             return null;
         }
         #endregion
+
 
     }
 

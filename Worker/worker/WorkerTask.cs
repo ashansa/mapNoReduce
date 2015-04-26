@@ -229,8 +229,83 @@ namespace Server.worker
             }
 
 
-      
-        }
 
+
+        internal Dictionary<StatusType, List<Int32>> getStatusOnFreezed()
+        {
+            Dictionary<StatusType, List<Int32>> status = new Dictionary<StatusType, List<Int32>>();
+          
+            if (splitMetadataList.Count > 0) {
+                List<Int32> inProgressSplits = new List<Int32>();
+                foreach (FileSplitMetadata meta in splitMetadataList) {
+                    inProgressSplits.Add(meta.SplitId);
+                }
+                status.Add(StatusType.NOT_STARTED, inProgressSplits);
+            }
+
+                if (taskResultList.Count > 0) {
+                    List<Int32> resultList = new List<Int32>();
+                    foreach (TaskResult result in taskResultList) { 
+                    resultList.Add(result.SplitId);
+                    }
+                    status.Add(StatusType.COMPLETED, resultList);
+                }
+                return status;
+            }
+
+
+        internal void updateDataStructures(Dictionary<StatusType, List<int>> updatedStatus)
+        {
+            List<FileSplitMetadata>copySplit=new List<FileSplitMetadata>(splitMetadataList);
+            List<TaskResult>copyResults= new List<TaskResult>(taskResultList);
+            for (int i = 0; i < updatedStatus.Count; i++)
+            {
+                KeyValuePair<StatusType, List<int>> entry = updatedStatus.ElementAt(i);
+                switch (entry.Key)
+                {
+                    case StatusType.NOT_STARTED:
+                        foreach (FileSplitMetadata meta in copySplit)
+                        {
+                            lock (splitMetadataList)
+                            {
+                                Boolean isAvailable = false;
+                                foreach (int split in entry.Value)
+                                {
+                                    if (meta.SplitId == split )
+                                    {
+                                        isAvailable = true;
+                                    }
+                                }
+                                if (!isAvailable && splitMetadataList.Contains(meta)) splitMetadataList.Remove(meta); 
+                            }
+                        }
+                        break;
+
+                    case StatusType.COMPLETED:
+                        foreach (int split in entry.Value)
+                        {
+                            lock (taskResultList)
+                            {
+                                foreach (TaskResult result in copyResults)
+                                {
+                                    Boolean isAvailable = false;
+                                    if (result.SplitId == split)
+                                    {
+                                        isAvailable = true;
+                                    }
+                                    if(!isAvailable && taskResultList.Contains(result))  taskResultList.Remove(result);
+
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
+    }
+
+    
 

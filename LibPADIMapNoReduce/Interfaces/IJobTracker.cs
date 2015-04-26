@@ -11,5 +11,6 @@ namespace PADIMapNoReduce
       void receiveStatus(Status status);
       void taskCompleted(int nodeId,int splitId);
       void readyForNewTask(int nodeId);
+      Dictionary<StatusType, List<int>> receiveFreezedWorkerStatus(Dictionary<StatusType, List<int>> freezedWorkerStatus, int nodeId,string nodeURL);
     }
 }

@@ -48,6 +48,7 @@ namespace PADIMapNoReduce
 
     public enum StatusType
     {
+    NOT_STARTED,
      INPROGRESS,
      COMPLETED,
      SUSPENDED,

@@ -15,5 +15,6 @@ namespace PADIMapNoReduce
       Dictionary<Int32,WorkerDetails> getExistingWorkers();
       Boolean initWorker(WorkerMetadata workerMetadata);
       void removeFailedNode(int failedId);
+      void addUnfreezedNode(int nodeId, String nodeURL);
     }
 }
