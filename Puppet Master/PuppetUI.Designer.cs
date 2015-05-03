@@ -37,6 +37,8 @@
             this.label_filePath = new System.Windows.Forms.Label();
             this.openScriptFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.btn_executeScript = new System.Windows.Forms.Button();
+            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.button3 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label4
@@ -75,7 +77,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(42, 106);
+            this.button2.Location = new System.Drawing.Point(42, 101);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 16;
@@ -105,11 +107,31 @@
             this.btn_executeScript.UseVisualStyleBackColor = true;
             this.btn_executeScript.Click += new System.EventHandler(this.button3_Click);
             // 
+            // listBox1
+            // 
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.Location = new System.Drawing.Point(42, 166);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(440, 251);
+            this.listBox1.TabIndex = 19;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(506, 269);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(108, 23);
+            this.button3.TabIndex = 20;
+            this.button3.Text = "Execute Selected";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click_1);
+            // 
             // PuppetUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(626, 288);
+            this.ClientSize = new System.Drawing.Size(683, 474);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.listBox1);
             this.Controls.Add(this.btn_executeScript);
             this.Controls.Add(this.label_filePath);
             this.Controls.Add(this.button2);
@@ -135,6 +157,8 @@
         private System.Windows.Forms.Label label_filePath;
         private System.Windows.Forms.OpenFileDialog openScriptFileDialog;
         private System.Windows.Forms.Button btn_executeScript;
+        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.Button button3;
     }
 }
 

@@ -92,7 +92,6 @@ namespace PADIMapNoReduce
                 try
                 {
                     clientapp.Invoke(eve, new Object[] { "job completed within "+difference });
-                    // form1.Invoke(new ChatApp.Form1.printMsg(form1.addMessage), new Object[] { msg });
                 }
                 catch (Exception ex)
                 {
@@ -135,7 +134,6 @@ namespace PADIMapNoReduce
                    additional++;
                 }
             }
-
 
             fs.Position = 0;
             fs.Seek(startByte, SeekOrigin.Current);

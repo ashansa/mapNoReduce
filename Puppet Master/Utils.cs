@@ -116,6 +116,7 @@ namespace Puppet_Master
                 //ignoring lines starting with %  - comment lines
                 if (!line.StartsWith("%"))
                 {
+
                     executeCommand(line);
                 }
             }
