@@ -5,6 +5,7 @@ using System.Text;
 
 namespace PADIMapNoReduce.Entities
 {
+    [Serializable]
     public class Task
     {
         int splitId;
@@ -50,7 +51,7 @@ namespace PADIMapNoReduce.Entities
             set { percentageCompleted = value; }
         }
 
-        public Task(int splitId,FileSplitMetadata splitMetadata,StatusType statusType)
+        public Task(int splitId, FileSplitMetadata splitMetadata, StatusType statusType)
         {
             this.splitId = splitId;
             this.splitMetadata = splitMetadata;
@@ -58,6 +59,7 @@ namespace PADIMapNoReduce.Entities
         }
 
     }
+
 
    /* public enum StatusType
     {

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Collections;
+using Server.worker;
+using System.Configuration;
 
 namespace Server.tracker
 {
@@ -13,8 +15,26 @@ namespace Server.tracker
     {
         private Dictionary<int, IWorkerTracker> workerProxyMap = new Dictionary<int, IWorkerTracker>();
         Dictionary<int, Task> taskList = new Dictionary<int, Task>();
+        Dictionary<int, Task> originalTaskList = new Dictionary<int, Task>();
         Dictionary<Int32, WorkerDetails> existingWorkerMap = new Dictionary<Int32, WorkerDetails>();//workerId,url
         String clientURL;
+        Timer heartBeatTimer;
+        int trackerChangeVotes = 0;
+        HashSet<int> votedNodes = new HashSet<int>();
+        int workerId = 0;
+        bool isTrackerFreezed = false;
+        Timer minorityNotifyTimer;
+
+        public bool IsTrackerFreezed
+        {
+            get { return isTrackerFreezed; }
+            set { isTrackerFreezed = value; }
+        }
+
+     
+        WorkerCommunicator communicator = new WorkerCommunicator();
+
+        int count = 0;
 
         public String ClientURL
         {
@@ -33,10 +53,12 @@ namespace Server.tracker
             set { taskList = value; }
         }
 
-        public TrackerTask(String clientURL, Dictionary<int, WorkerDetails> existingMap)
+        public TrackerTask(String clientURL, Dictionary<int, WorkerDetails> existingMap, int workerId)
         {
             this.clientURL = clientURL;
             this.existingWorkerMap = existingMap;
+            this.workerId = workerId;
+            this.isTrackerFreezed = false;
         }
 
         public void splitJob(JobMetadata jobMetadata)
@@ -54,10 +76,173 @@ namespace Server.tracker
                 FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, jobMetadata.ClientUrl, Worker.JOBTRACKER_URL);
                 Task task = new Task(i, metadata, StatusType.NOT_SEND_TO_WORKER);
                 taskList.Add(i, task);
+
+                FileSplitMetadata metadataOrig = new FileSplitMetadata(i, start, end, jobMetadata.ClientUrl, Worker.JOBTRACKER_URL);
+                Task taskOrig = new Task(i, metadataOrig, StatusType.NOT_SEND_TO_WORKER);
+                originalTaskList.Add(i, taskOrig);
+            }
+            if (existingWorkerMap.Count > 1)
+            {
+                string bkpUrl = GetBackupTrackerUrl();
+                communicator.SendTaskCopyToBackupTracker(bkpUrl, originalTaskList, clientURL);
+                communicator.notifyBackupJobtrackerUrl(bkpUrl, existingWorkerMap);
             }
             distributeTasks();
-            //Timer t = new Timer(TimerCallback, null, 0, 2000);
+
         }
+
+        private string GetBackupTrackerUrl()
+        {
+            string bkpUrl = null;
+            Random rand = new Random();
+            int randId = 0;
+            while (true)
+            {
+                randId = rand.Next(1, (existingWorkerMap.Count));
+                if (randId != workerId)
+                    break;
+            }
+            Console.WriteLine("Backup Trackeser = " + existingWorkerMap[randId].Nodeurl + "**********************");
+            return existingWorkerMap[randId].Nodeurl;
+
+        }
+
+        public void startHeartBeat()
+        {
+            int heartbeatTime = Convert.ToInt32(ConfigurationManager.AppSettings[Constants.JOB_TRACKER_HEARTBEAT_INTERVAL].ToString());
+            heartBeatTimer = new Timer(TimerCallback, null, 0, 2000);
+        }
+
+        public void stopHeatBeat()
+        {
+            if (heartBeatTimer != null)
+            {
+                heartBeatTimer.Dispose();
+                Console.WriteLine("Heart Beat timer disposed");
+            }
+        }
+
+        public void SetCopyOfTasks(Dictionary<int, Task> tasks)
+        {
+            Console.WriteLine("Original task list received by " + workerId + "**************************");
+            originalTaskList.Clear();
+            taskList.Clear();
+            foreach (var item in tasks)
+            {
+                item.Value.SplitMetadata.JobTrackerUrl = existingWorkerMap[workerId].Nodeurl;
+                originalTaskList.Add(item.Key, item.Value);
+                taskList.Add(item.Key, item.Value);
+
+            }
+        }
+
+        Boolean hasForced = false;
+        public void ChangeTracker(int workerID, List<int> processingSplits, List<int> alreadySentSplits)
+        {
+            bool hasAllReplied=false;
+            lock (taskList)
+            {
+                trackerChangeVotes++;
+                votedNodes.Add(workerID);
+
+                foreach (int item in processingSplits)
+                {
+                    taskList[item].StatusType = StatusType.INPROGRESS;
+                    taskList[item].WorkerId = workerID;
+                }
+                foreach (int item in alreadySentSplits)
+                {
+                    taskList[item].StatusType = StatusType.COMPLETED;
+                    taskList[item].WorkerId = workerID;
+                }
+
+                if(hasReceivedAllVotes()){
+                    Console.WriteLine("all votes received");
+                    hasAllReplied = true;
+                    foreach (var item in taskList)
+                    {
+                        Common.Logger().LogInfo("Split ID= " + item.Key + " WorkerID = " + item.Value.WorkerId + " Status= " + item.Value.StatusType.ToString(), string.Empty, string.Empty);
+                    }
+                }
+            }
+
+            //TODO:start timer to notify minority
+
+            if (hasAllReplied && !Worker.isJobTracker)
+            {
+                string bkpUrl = GetBackupTrackerUrl();
+                communicator.SendTaskCopyToBackupTracker(bkpUrl, originalTaskList, clientURL);
+                communicator.notifyBackupJobtrackerUrl(bkpUrl, existingWorkerMap);
+                count = 100;
+                startHeartBeat();
+                communicator.TrackerStabilized(existingWorkerMap);
+
+                lock (taskList)
+                {
+                    trackerChangeVotes = 0;
+                    votedNodes = new HashSet<int>();
+                    Worker.isJobTracker = true;
+                    hasForced = false;
+                }
+
+            }
+            else if (hasMajorityReplied() && !hasForced) {
+                lock (taskList)
+                {
+                    hasForced = true;
+                }
+                forceMinorityForVote();
+            }
+        }
+
+        /* if after a timeout still doenst have majority, notify them as tracker is alive */
+
+        private void forceMinorityForVote()
+        {
+            HashSet<int> keySet = new HashSet<int>(existingWorkerMap.Keys);
+            var minoritySet = keySet.Except(votedNodes);
+            IWorkerTracker worker;
+            foreach (int workerId in minoritySet)
+            {
+                try
+                {
+                    lock (workerProxyMap)
+                    {
+                        if (!workerProxyMap.ContainsKey(workerId))
+                        {
+                            string url = existingWorkerMap[workerId].Nodeurl;
+                            worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
+                            if (worker != null)
+                            {
+                                workerProxyMap.Add(workerId, worker);
+                            }
+                        }
+                        else
+                        {
+                            worker = workerProxyMap[workerId];
+                        }
+                    }
+                    Thread thread = new Thread(() => worker.forceTrackerChange());
+                    thread.Start();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+        private bool hasMajorityReplied()
+        {
+            return (votedNodes.Count == existingWorkerMap.Count - 1) ?true:false;
+        }
+
+        private bool hasReceivedAllVotes()
+        {
+        return votedNodes.Count==existingWorkerMap.Count?true:false;
+        }
+
+
 
         private void distributeTasks()
         {
@@ -81,54 +266,64 @@ namespace Server.tracker
         /* Only a dummy method, need to handle failures */
         private void TimerCallback(object state)
         {
-            Console.WriteLine("heartbeat called");
+            /* if (count == 2)
+                 return;
+             count++;*/
+
             IWorkerTracker worker = null;
-
-            for (int i = 0; i < existingWorkerMap.Count; i++)
+            int workerCount = existingWorkerMap.Count;
+            List<int> workerIdLIst = new List<int>(existingWorkerMap.Keys);
+            for (int i = 0; i < workerIdLIst.Count; i++)
             {
-                KeyValuePair<Int32, WorkerDetails> entry = existingWorkerMap.ElementAt(i);
-                int retryRounds = 0;
-
-
-                for (; retryRounds < Constants.RETRY_ROUNDS; )
+                if (existingWorkerMap.ContainsKey(workerIdLIst[i]))
                 {
+                    //KeyValuePair<Int32, WorkerDetails> entry = existingWorkerMap.ElementAt(i);
+                    //int retryRounds = 0;
+
+
+                    // for (; retryRounds < Constants.RETRY_ROUNDS; )
+                    //  {
                     try
                     {
                         lock (workerProxyMap)
                         {
-                            if (!workerProxyMap.ContainsKey(entry.Key))
+                            if (!workerProxyMap.ContainsKey(workerIdLIst[i]))
                             {
-                                string url = entry.Value.Nodeurl;
+                                string url = existingWorkerMap[workerIdLIst[i]].Nodeurl;
                                 worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
                                 if (worker != null)
                                 {
-                                    workerProxyMap.Add(entry.Key, worker);
+                                    workerProxyMap.Add(workerIdLIst[i], worker);
                                 }
                             }
                             else
                             {
-                                worker = workerProxyMap[entry.Key];
+                                worker = workerProxyMap[workerIdLIst[i]];
                             }
                         }
                         worker.checkHeartbeat();
-                        break;
                     }
                     catch (Exception ex)
                     {
-                        retryRounds++;
-                        if (retryRounds == Constants.RETRY_ROUNDS)
-                        {
-                            existingWorkerMap.Remove(entry.Key);
-                            worker.getExistingWorkers().Remove(entry.Key);
+                        // retryRounds++;
+                        // if (retryRounds == Constants.RETRY_ROUNDS)
+                        //  {
+                        Console.WriteLine("Removed worker from map*****************" + "node is " + workerIdLIst[i]);
+                        if(existingWorkerMap.ContainsKey(workerIdLIst[i])){
+                        existingWorkerMap.Remove(workerIdLIst[i]);
+                        //worker.getExistingWorkers().Remove(entry.Key);
+                        workerCount--;
 
-                            Thread taskUpdateThread = new Thread(() => updateTaskList(entry.Key));
-                            taskUpdateThread.Start();
-                            /*do the failed notification sending in a seperate thread*/
-                            Thread thread = new Thread(() => notifyWorkersAboutFailedNode(entry.Key));
-                            thread.Start();
-                            Common.Logger().LogError("node " + entry.Key + " was removed while during heartbeat", string.Empty, string.Empty);
-                            Common.Logger().LogError(ex.Message, string.Empty, string.Empty);
+                        Thread taskUpdateThread = new Thread(() => updateTaskList(workerIdLIst[i]));
+                        taskUpdateThread.Start();
+                        /*do the failed notification sending in a seperate thread*/
+                        Thread thread = new Thread(() => notifyWorkersAboutFailedNode(workerIdLIst[i]));
+                        thread.Start();
+                        Common.Logger().LogError("node " + workerIdLIst[i] + " was removed while during heartbeat", string.Empty, string.Empty);
+                        Common.Logger().LogError(ex.Message, string.Empty, string.Empty);
                         }
+                        //  }
+                        // }
                     }
                 }
             }
@@ -143,7 +338,8 @@ namespace Server.tracker
                 {
                     if (task.Value.WorkerId == failedNodeId && task.Value.StatusType != StatusType.COMPLETED)
                     {
-                        taskList[failedNodeId].StatusType = StatusType.NOT_SEND_TO_WORKER;
+                        task.Value.StatusType = StatusType.NOT_SEND_TO_WORKER;
+                        task.Value.WorkerId = 0;
                     }
                 }
             }
@@ -174,8 +370,7 @@ namespace Server.tracker
                             worker = workerProxyMap[entry.Key];
                         }
                     }
-                    worker.removeFailedNode(entry.Key);
-                    break;
+                    worker.removeFailedNode(failedNodeId);
                 }
                 catch (Exception ex)
                 {
@@ -187,14 +382,20 @@ namespace Server.tracker
         //update status of rela
         public void resultSentToClient(int nodeId, int splitId)
         {
+            Console.WriteLine("tracker id is " + this.workerId);
             lock (taskList[splitId])
             {
+                Common.Logger().LogInfo("*************************************", string.Empty, string.Empty);
+                foreach (var item in taskList)
+                {
+                    Common.Logger().LogInfo("on result send Split ID= " + item.Key + " WorkerID = " + item.Value.WorkerId + " Status= " + item.Value.StatusType.ToString(), string.Empty, string.Empty);
+                }
                 taskList[splitId].StatusType = StatusType.COMPLETED;
                 existingWorkerMap[nodeId].ProcessedSplits.Add(splitId);
                 if (existingWorkerMap[nodeId].State == WorkerState.ABOUT_TO_IDLE)
                 {
                     existingWorkerMap[nodeId].State = WorkerState.IDLE;
-                    ReplaceSlowTasks();
+                    ReplaceSlowTasks(nodeId);
                 }
             }
         }
@@ -246,19 +447,22 @@ namespace Server.tracker
         /*greedy way, will try to complete remaining at the end by high performing nodes*/
         internal void readyForNewTask(int nodeId)
         {
-            FileSplitMetadata splitMetadata = getNextPendingSplitFromList(nodeId);
+            if (existingWorkerMap.ContainsKey(nodeId))
+            {
+                FileSplitMetadata splitMetadata = getNextPendingSplitFromList(nodeId);
 
-            if (splitMetadata != null)
-            {
-                sendTaskToWorker(nodeId, splitMetadata, 1);
-            }
-            else
-            {
-                existingWorkerMap[nodeId].State = WorkerState.ABOUT_TO_IDLE;
+                if (splitMetadata != null)
+                {
+                    sendTaskToWorker(nodeId, splitMetadata, 1);
+                }
+                else
+                {
+                    existingWorkerMap[nodeId].State = WorkerState.ABOUT_TO_IDLE;
+                }
             }
         }
 
-        private void ReplaceSlowTasks()
+        private void ReplaceSlowTasks(int nodeId)
         {
             if (!HasPendingTasks())
             {
@@ -272,7 +476,7 @@ namespace Server.tracker
                         if (pair.Value.StatusType == StatusType.INPROGRESS)
                         {
                             int splitId = pair.Key;
-                            bestWorker = GetBestWorker(pair.Value);
+                            bestWorker = GetBestWorker(pair.Value, nodeId);
                             //suspend
                             if (bestWorker != null)
                             {
@@ -294,54 +498,62 @@ namespace Server.tracker
             }
         }
 
-        private WorkerDetails GetBestWorker(Task task)
+        private WorkerDetails GetBestWorker(Task task, int nodeId)
         {
             WorkerDetails bestWorker = null;
+
             int completedSplitCount = existingWorkerMap[task.WorkerId].ProcessedSplits.Count;
             if (task.PercentageCompleted < Constants.jobReplaceBoundaryPercentage)
             {
                 bestWorker = (from worker in existingWorkerMap.Values
-                              where worker.ProcessedSplits.Count > completedSplitCount && worker.State == WorkerState.IDLE
+                              where worker.ProcessedSplits.Count > completedSplitCount && worker.State == WorkerState.IDLE && worker.Nodeid != nodeId
                               orderby worker.ProcessedSplits.Count descending
                               select worker).FirstOrDefault();
 
             }
+
             return bestWorker;
         }
 
-   
+
         private void sendTaskToWorker(int nodeId, FileSplitMetadata splitMetadata, int roundsToTry)
         {
-            IWorkerTracker worker = null;
-            try
+            if (!isTrackerFreezed)
             {
-                lock (workerProxyMap)
+                IWorkerTracker worker = null;
+                try
                 {
-                    if (!workerProxyMap.ContainsKey(nodeId))
+                    lock (workerProxyMap)
                     {
-                        string url = existingWorkerMap[nodeId].Nodeurl;
-                        worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
-                        if (worker != null)
+                        if (!workerProxyMap.ContainsKey(nodeId))
                         {
-                            workerProxyMap.Add(nodeId, worker);
+                            string url = existingWorkerMap[nodeId].Nodeurl;
+                            worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
+                            if (worker != null)
+                            {
+                                workerProxyMap.Add(nodeId, worker);
+                            }
+                        }
+                        else
+                        {
+                            worker = workerProxyMap[nodeId];
                         }
                     }
-                    else
-                    {
-                        worker = workerProxyMap[nodeId];
-                    }
-                }
 
-                worker.receiveTask(splitMetadata);
-                existingWorkerMap[nodeId].State = WorkerState.BUSY;
-            }
-            catch (Exception ex)
-            {
-                      taskList[splitMetadata.SplitId].StatusType = StatusType.NOT_SEND_TO_WORKER;
+                    worker.receiveTask(splitMetadata);
+                    existingWorkerMap[nodeId].State = WorkerState.BUSY;
+                }
+                catch (Exception ex)
+                {
+                    taskList[splitMetadata.SplitId].StatusType = StatusType.NOT_SEND_TO_WORKER;
                     Common.Logger().LogError("Unable to send split " + splitMetadata.SplitId + " to node " + nodeId, string.Empty, string.Empty);
                     Common.Logger().LogError(ex.Message, string.Empty, string.Empty);
+                }
             }
-
+           else
+            {
+                Console.WriteLine("tracker with id " + workerId + " has been freezed");
+            }
         }
 
         private FileSplitMetadata getNextPendingSplitFromList(int workerId)
@@ -395,16 +607,19 @@ namespace Server.tracker
             return true;
         }
 
-        internal Dictionary<StatusType, List<int>> getStatusForWorker(Dictionary<StatusType, List<int>> freezedWorkerStatus, int nodeId,string nodeURL)
+        internal Dictionary<StatusType, List<int>> getStatusForWorker(Dictionary<StatusType, List<int>> freezedWorkerStatus, int nodeId, string nodeURL)
         {
             //Worker has come back. first thing to do is add to worker map and notify others
             WorkerDetails workerObj = getWorker(nodeId, nodeURL);
-            existingWorkerMap.Add(nodeId, workerObj);
-            Thread thread = new Thread(() => notifyWorkersAboutUnfreezed(nodeId,nodeURL));
-            thread.Start();
-        
+
+            if (!existingWorkerMap.ContainsKey(nodeId))
+            {
+                existingWorkerMap.Add(nodeId, workerObj);
+                Thread thread = new Thread(() => notifyWorkersAboutUnfreezed(nodeId, nodeURL));
+                thread.Start();
+            }
+
             //make him upto date
-            Console.WriteLine("tracker received the status");
             List<Int32> inProgress = new List<int>();
             List<Int32> sendToClient = new List<int>();
             bool isTaskAvailable = false;
@@ -417,18 +632,19 @@ namespace Server.tracker
                     case StatusType.COMPLETED:
                         foreach (int split in entry.Value)
                         {
-                            lock(taskList[split]){
-                            if (taskList[split].StatusType == StatusType.INPROGRESS || taskList[split].StatusType == StatusType.NOT_SEND_TO_WORKER)
+                            lock (taskList[split])
                             {
-                                if (taskList[split].StatusType == StatusType.INPROGRESS)
+                                if (taskList[split].StatusType == StatusType.INPROGRESS || taskList[split].StatusType == StatusType.NOT_SEND_TO_WORKER)
                                 {
-                                    string url = existingWorkerMap[taskList[split].WorkerId].Nodeurl;
-                                    IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
-                                    worker.suspendTask(split);
+                                    if (taskList[split].StatusType == StatusType.INPROGRESS)
+                                    {
+                                        string url = existingWorkerMap[taskList[split].WorkerId].Nodeurl;
+                                        IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
+                                        worker.suspendTask(split);
+                                    }
+                                    taskList[split].WorkerId = nodeId;//later will receive completed once result sent to client
+                                    sendToClient.Add(split);
                                 }
-                                taskList[split].WorkerId = nodeId;//later will receive completed once result sent to client
-                                sendToClient.Add(split);
-                            }
                             }
                         }
                         break;
@@ -436,15 +652,17 @@ namespace Server.tracker
                     case StatusType.NOT_STARTED:
                         foreach (int split in entry.Value)
                         {
-                            lock(taskList[split]){
-                               if (taskList[split].StatusType == StatusType.INPROGRESS && taskList[split].WorkerId != nodeId && taskList[split].PercentageCompleted > Constants.jobReplaceBoundaryPercentage || taskList[split].StatusType == StatusType.COMPLETED)
+                            lock (taskList[split])
                             {
-                                isTaskAvailable = false;
-                            }
-                            else {
-                                inProgress.Add(split);
-                                isTaskAvailable = true;
-                            }
+                                if (taskList[split].StatusType == StatusType.INPROGRESS && taskList[split].WorkerId != nodeId && taskList[split].PercentageCompleted > Constants.jobReplaceBoundaryPercentage || taskList[split].StatusType == StatusType.COMPLETED)
+                                {
+                                    isTaskAvailable = false;
+                                }
+                                else
+                                {
+                                    inProgress.Add(split);
+                                    isTaskAvailable = true;
+                                }
                             }
                         }
                         break;
@@ -462,8 +680,8 @@ namespace Server.tracker
                     existingWorkerMap[nodeId].State = WorkerState.BUSY;
                 }
             }
-            else {
-                Console.WriteLine("he has a job");
+            else
+            {
                 existingWorkerMap[nodeId].State = WorkerState.BUSY;
             }
             result.Add(StatusType.COMPLETED, sendToClient);//cmpare completed and ResultTask and remove from resulttask if not in
@@ -481,7 +699,7 @@ namespace Server.tracker
             return worker;
         }
 
-        private void notifyWorkersAboutUnfreezed(int nodeId,String nodeURL)
+        private void notifyWorkersAboutUnfreezed(int nodeId, String nodeURL)
         {
             IWorkerTracker worker = null;
             for (int i = 0; i < existingWorkerMap.Count; i++)
@@ -505,8 +723,7 @@ namespace Server.tracker
                             worker = workerProxyMap[entry.Key];
                         }
                     }
-                    worker.addUnfreezedNode(nodeId,nodeURL);
-                    break;
+                    worker.addUnfreezedNode(nodeId, nodeURL);
                 }
                 catch (Exception ex)
                 {
@@ -514,6 +731,64 @@ namespace Server.tracker
                 }
             }
 
+        }
+
+        internal void notifyJobCompleteToWorker()
+        {
+            IWorkerTracker worker = null;
+            for (int i = 0; i < existingWorkerMap.Count; i++)
+            {
+                KeyValuePair<Int32, WorkerDetails> entry = existingWorkerMap.ElementAt(i);
+                try
+                {
+                    lock (workerProxyMap)
+                    {
+                        if (!workerProxyMap.ContainsKey(entry.Key))
+                        {
+                            string url = entry.Value.Nodeurl;
+                            worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
+                        }
+                        else
+                        {
+                            worker = workerProxyMap[entry.Key];
+                        }
+                    }
+                    worker.jobCompleted();
+                }
+                catch (Exception ex)
+                {
+                    Common.Logger().LogError("Unable to notify others about unfreeze by Job Tracker", string.Empty, string.Empty);
+                }
+            }
+        }
+
+        internal void notifyWorkersForJobStart()
+        {
+            IWorkerTracker worker = null;
+            for (int i = 0; i < existingWorkerMap.Count; i++)
+            {
+                KeyValuePair<Int32, WorkerDetails> entry = existingWorkerMap.ElementAt(i);
+                try
+                {
+                    lock (workerProxyMap)
+                    {
+                        if (!workerProxyMap.ContainsKey(entry.Key))
+                        {
+                            string url = entry.Value.Nodeurl;
+                            worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
+                        }
+                        else
+                        {
+                            worker = workerProxyMap[entry.Key];
+                        }
+                    }
+                    worker.receiveNewJob();
+                }
+                catch (Exception ex)
+                {
+                    Common.Logger().LogError("Unable to notify others about unfreeze by Job Tracker", string.Empty, string.Empty);
+                }
+            }
         }
     }
 }

@@ -183,7 +183,7 @@ namespace Server.worker
         private byte[] getByteStreamOfResults()
         {
             StringBuilder output = new StringBuilder();
-            result.Sort(keyValuePairComparator);
+           // result.Sort(keyValuePairComparator);
             foreach (KeyValuePair<string, string> pair in result)
             {
                 output.Append(pair.Key).Append(":").Append(pair.Value);
