@@ -10,6 +10,7 @@ using System.Configuration;
 using System.Collections;
 using System.Text;
 using System.Threading;
+using System.IO.Compression;
 
 namespace PADIMapNoReduce
 {
@@ -54,7 +55,7 @@ namespace PADIMapNoReduce
             /*we need to set the input file part in workerMetadata.chunk*/
             String inputCode = this.dllPath;
             byte[] code = File.ReadAllBytes(inputCode);
-            string workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
+            String workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
             //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
             Console.WriteLine(Environment.CurrentDirectory);
@@ -81,7 +82,7 @@ namespace PADIMapNoReduce
             //TODO: notify UI???
             endTime = DateTime.Now;
             var diff = endTime.Subtract(startTime);
-            String difference = String.Format("{0}:{1}:{2}", diff.Hours, diff.Minutes, diff.Seconds);
+            String difference = String.Format("{0}h:{1}min:{2}sec", diff.Hours, diff.Minutes, diff.Seconds);
             ClientApp clientapp = new ClientApp();
             new Thread(delegate()
            {
@@ -141,12 +142,38 @@ namespace PADIMapNoReduce
             byte[] target = new byte[size+additional];
             fs.Read(target, 0, (int)(endByte+additional  - startByte));
             fs.Close();
-            //string split = new UnicodeEncoding().GetString(target);
+
+            //return Zip(target);
 
             string split = System.Text.Encoding.UTF8.GetString(target);
             return split;
         }
+        public static byte[] Zip(byte[] str)
+        {
+            using (var msi = new MemoryStream(str))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(mso, CompressionMode.Compress))
+                {
+                    //msi.CopyTo(gs);
+                    CopyTo(msi, gs, str.Length);
+                }
 
+                return mso.ToArray();
+            }
+        }
+
+        public static void CopyTo(Stream src, Stream dest, int count)
+        {
+            byte[] bytes = new byte[count];
+
+            int cnt;
+
+            while ((cnt = src.Read(bytes, 0, bytes.Length)) != 0)
+            {
+                dest.Write(bytes, 0, cnt);
+            }
+        }
         #region specific
         //to avoid expiring objects within 20 minutes
         public override object InitializeLifetimeService()

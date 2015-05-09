@@ -51,7 +51,6 @@ namespace Puppet_Master
         /*check whether u can do it in a thread*/
         public bool createLocalWorker(WorkerMetadata workerMetadata)
         {         
-            Console.WriteLine("service url is " + workerMetadata.ServiceURL);
             Worker  worker = new Worker(workerMetadata.WorkerId);
             workerIdMap.Add(workerMetadata.WorkerId, worker);
           /*  new Thread(delegate()

@@ -163,9 +163,8 @@ namespace Server.worker
                                typeof(IWorkerTracker),
                                Worker.JOBTRACKER_URL);
                 }
-                Common.Logger().LogInfo("Worker ID = " + workerId + " Split Id= " + taskResult.SplitId, string.Empty, string.Empty);
+                Common.Logger().LogInfo("Sent to taskCompleted by Worker ID = " + workerId + " Split Id= " + taskResult.SplitId, string.Empty, string.Empty);
                 trackerProxy.taskCompleted(workerId, taskResult.SplitId);
-                Console.WriteLine("Sent to taskCompleted by  " + workerId);
 
             }
             catch (Exception ex)
@@ -192,7 +191,8 @@ namespace Server.worker
                                 typeof(IWorkerTracker),
                                 Worker.JOBTRACKER_URL);
                 }
-                Console.WriteLine("requesting task in threashold reached");
+                Common.Logger().LogInfo("requesting task in threashold reached",string.Empty,string.Empty);
+
                 trackerProxy.readyForNewTask(nodeId);
             }
         }

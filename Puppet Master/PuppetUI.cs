@@ -76,29 +76,24 @@ namespace Puppet_Master
             }
             else
             {
-                executeScript(scriptCommands);
+                Thread thread = new Thread(() => utils.executeScript(scriptCommands));
+                thread.Start();
 
             }
         }
 
-
-        public void executeScript(string[] scriptCommands)
-        {
-            foreach (string line in scriptCommands)
-            {
-                //ignoring lines starting with %  - comment lines
-                if (!line.StartsWith("%"))
-                {
-                    Thread thread = new Thread(() => utils.executeCommand(txt_command.Text));
-                    thread.Start();
-                }
-            }
-        }
 
         private void button3_Click_1(object sender, EventArgs e)
         {
             String command = listBox1.SelectedItem.ToString();
-            listBox1.SetSelected(listBox1.SelectedIndex + 1, true);
+            if (listBox1.Items.Count == listBox1.SelectedIndex + 1)
+            {
+                listBox1.SelectedIndex = 0;
+            }
+            else
+            {
+                listBox1.SetSelected(listBox1.SelectedIndex + 1, true);
+            }
             Thread thread = new Thread(() => utils.executeCommand(command));
             thread.Start();
         }

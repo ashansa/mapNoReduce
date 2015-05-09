@@ -90,7 +90,7 @@ namespace PADIMapNoReduce
         {
             if (!WorkerTask.IS_WORKER_FREEZED)
             {
-                Console.WriteLine("Task Received ++++++++++++++++ from " + splitMetadata.JobTrackerUrl);
+                Common.Logger().LogInfo("Task Received ++++++++++++++++ from " + splitMetadata.JobTrackerUrl,string.Empty,string.Empty);
                 CLIENT_URL = splitMetadata.ClientUrl;
                 JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
                 workerTask.addSplitToSplitList(splitMetadata);
@@ -122,7 +122,7 @@ namespace PADIMapNoReduce
             }
             else
             {
-                Console.Write("I m freeze thrown exec");
+                Console.WriteLine("I m freeze thrown exec");
                 throw new RemoteComException();
             }
         }
@@ -153,7 +153,7 @@ namespace PADIMapNoReduce
         }
         public void forceTrackerChange()
         {
-            Console.WriteLine("TRACKER CHANGE FORCED RECEIVED");
+            Common.Logger().LogInfo("TRACKER CHANGE FORCED RECEIVED",string.Empty,string.Empty);
             workerTask.InitiateTrackerTransition(true);
         }
 
@@ -161,7 +161,6 @@ namespace PADIMapNoReduce
         {
             workerTask = new WorkerTask(WorkerId);//starting a fresh worker for next job
             startWorkerTasks();
-            Console.WriteLine("timers started");
             if (existingWorkerMap.Count > 1)//no timers in case of one node
                 workerTask.startTimer();
         }
@@ -182,7 +181,7 @@ namespace PADIMapNoReduce
 
             CLIENT_URL = jobMetadata.ClientUrl;
 
-
+            Console.WriteLine("Job request received for " + JOBTRACKER_URL, string.Empty, string.Empty);
 
             //start jobtracker threads
             //TrackerDetails trackerDetails = new TrackerDetails(CLIENT_URL, existingWorkerMap);
@@ -206,8 +205,7 @@ namespace PADIMapNoReduce
             trackerTask.updateStatus(status);
         }
 
-        /*will call by worker when job completed, but still results may not sent */
-        /*FIXME Do we really need this??  */
+
         public void taskCompleted(int nodeId, int splitId)
         {
             try
@@ -216,9 +214,11 @@ namespace PADIMapNoReduce
                 if (trackerTask.isJobCompleted())
                 {
                     client.receiveJobCompletedNotification();
-                    Console.WriteLine("Job completed Hit");
+                    Common.Logger().LogInfo("Job completed Hit", string.Empty, string.Empty);
+                    Console.WriteLine("Job completed Hit", string.Empty, string.Empty);
                     trackerTask.stopHeatBeat();
                     trackerTask.notifyJobCompleteToWorker();
+                    //GC.Collect();
                     isJobTracker = false;//he is no longer the job tracker
                 }
             }
@@ -242,10 +242,10 @@ namespace PADIMapNoReduce
         public void SetCopyOfTasks(Dictionary<int, Task> tasks, string clientUrl)
         {
             trackerTask = new TrackerTask(clientUrl, existingWorkerMap, workerId);
-            Console.WriteLine("my status is " + trackerTask.IsTrackerFreezed);
             client = (IClient)Activator.GetObject(typeof(IClient), clientUrl);
             trackerTask.SetCopyOfTasks(tasks);
-            Console.WriteLine("Tasklist copied to backup with id***********************"+workerId);
+            Common.Logger().LogInfo("Tasklist copied to backup with id***********************" + workerId, string.Empty, string.Empty);
+
         }
 
         public Dictionary<StatusType, List<int>> receiveFreezedWorkerStatus(Dictionary<StatusType, List<int>> freezedWorkerStatus, int nodeId, String nodeURL)
@@ -278,7 +278,6 @@ namespace PADIMapNoReduce
                 communicator.notifyExistingWorkers(workerId, workerMetadata.ServiceURL, existingWorkerMap);
                 addNewWorker(workerMetadata.WorkerId, workerMetadata.ServiceURL); //add self
             }
-            Console.WriteLine("EXISTING MAP COUNT" + existingWorkerMap.Count);
 
            // startWorkerTasks();
             return true;
@@ -286,7 +285,7 @@ namespace PADIMapNoReduce
 
         public void displayStatus()
         {
-                if (isJobTracker)
+                if (isJobTracker && trackerTask!=null)
                 {
                     trackerTask.printStatus(workerId);
                 }
@@ -309,12 +308,14 @@ namespace PADIMapNoReduce
         {
                 WorkerTask.IS_WORKER_FREEZED = true;
                 workerTask.stopTimer();
-                Console.WriteLine("going to freeze " + workerId);
+                Console.WriteLine("going to freeze worker " + workerId);
+                Common.Logger().LogInfo("going to freeze " + workerId, string.Empty, string.Empty);
         }
 
         public void unfreezeWorker()
         {
-                Console.WriteLine("going to unfreeze status " + WorkerTask.IS_WORKER_FREEZED);
+                Console.WriteLine("going to unfreeze " + workerId);
+                Common.Logger().LogInfo("going to unfreeze "+workerId, string.Empty, string.Empty);
                 WorkerTask.IS_WORKER_FREEZED = false;
                 workerTask.LatestPingTime = DateTime.Now;
                 workerTask.startTimer();
@@ -330,14 +331,16 @@ namespace PADIMapNoReduce
         {
             trackerTask.IsTrackerFreezed = true;
             trackerTask.stopHeatBeat();
-            Console.WriteLine("tracker has freezed the id is"+workerId);
+            Console.WriteLine("going to freeze tracker" + workerId);
+            Common.Logger().LogInfo("going to freeze tracker" + workerId, string.Empty, string.Empty);
+
         }
 
         public void unfreezeTracker()
         {
             trackerTask.IsTrackerFreezed = false;
-            Console.WriteLine("tracker unfreezed");
-            Console.WriteLine("current tracker URL is " + Worker.JOBTRACKER_URL);
+            Common.Logger().LogInfo("going to unfreeze tracker" + workerId, string.Empty, string.Empty);
+            Console.WriteLine("Going to unfreeze tracker. But current tracker URL is " + Worker.JOBTRACKER_URL);
             isJobTracker = false;
         }
 

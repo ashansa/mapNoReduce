@@ -139,8 +139,7 @@ namespace Server.worker
                 resultSentSplits.Add(taskResult.SplitId);
                 communicator.sendResultsToClient(taskResult, this);
                 communicator.notifyResultsSentToClientEvent(workerId, taskResult, this);
-
-                Console.WriteLine("result sent by " + workerId + " Split ID = " + taskResult.SplitId + "trackerURL" + Worker.JOBTRACKER_URL);
+                Common.Logger().LogInfo("result sent by " + workerId + " Split ID = " + taskResult.SplitId + "trackerURL" + Worker.JOBTRACKER_URL, string.Empty, string.Empty);
             }
         }
 
@@ -167,7 +166,6 @@ namespace Server.worker
                 mapTask.SplitId = fileSplitMetadata.SplitId;
                 mapTask.Hasthresholdreached = false;
                 TaskResult taskResult = mapTask.processMapTask(workerTaskMetadata, fileSplitMetadata, workerId);
-                //communicator.notifyTaskCompletedEvent(workerId,fileSplitMetadata.SplitId);
                 if (taskResult != null)
                     addTaskToTaskResults(taskResult);
             }
@@ -200,7 +198,6 @@ namespace Server.worker
         {
             lock (taskResultList)
             {
-                Console.WriteLine("task result added to list ");
                 taskResultList.Add(taskResult);
 
                 if (taskResultList.Count == 1)
@@ -290,14 +287,10 @@ namespace Server.worker
 
         public void InitiateTrackerTransition(Boolean hasForced)
         {
-            //if (count == 0)
-            //{
-            //    count++;
             communicator.IsTrackerChanging = true;
 
             if(!hasForced)
             Thread.Sleep(1000);//This allow the working threads to stop detacting jobtracker failure
-            Console.WriteLine("Sleep over*********************");
             List<int> inprogressSplits = new List<int>();
             lock (splitMetadataList)
             {
@@ -325,8 +318,7 @@ namespace Server.worker
             }
            // Worker.JOBTRACKER_URL = Worker.BKP_JOBTRACKER_URL;
             communicator.FeedNewTracker(workerId, inprogressSplits, resultSentSplits);
-            Console.WriteLine("Feed Message Sent by " + workerId + "********************");
-
+            Common.Logger().LogInfo("Feed Message Sent by " + workerId + "********************", string.Empty, string.Empty);
             // }
         }
 
@@ -344,6 +336,7 @@ namespace Server.worker
             
             Console.WriteLine("Tracker Stabilized " + workerId + " current tracker is " + Worker.JOBTRACKER_URL);
             Console.WriteLine("Backup url  " + Worker.BKP_JOBTRACKER_URL);
+
         }
 
         private void getSplitIfIdle()
@@ -351,12 +344,11 @@ namespace Server.worker
 
             if (splitMetadataList.Count == 0)
             {
-                Console.WriteLine("REQUESTING NEW TASK");
+                Common.Logger().LogInfo("Requesting new task after stabilization", string.Empty, string.Empty);
                 communicator.hasThresholdReached(workerId);
             }
             else
-                Console.WriteLine("I have a split to process");
- 
+                Common.Logger().LogInfo("I have a split to process", string.Empty, string.Empty);
         }
 
 

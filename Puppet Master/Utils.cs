@@ -21,7 +21,6 @@ namespace Puppet_Master
             switch (keyword)
             {
                 case "submit":
-                    Console.WriteLine("job is going to be submitted");
                     submitJobToClient(command);
                     break;
 

@@ -63,7 +63,7 @@ namespace Server.tracker
 
         public void splitJob(JobMetadata jobMetadata)
         {
-            Console.WriteLine("splitting job");
+             Common.Logger().LogInfo("splitting job",string.Empty,string.Empty);
             long totalBytes = jobMetadata.TotalByteCount;
             long splits = jobMetadata.SplitCount;
 
@@ -72,7 +72,6 @@ namespace Server.tracker
                 long start = i * totalBytes / splits;
                 long end = start + totalBytes / splits;
 
-                //TODO : give tracker URL dynamically
                 FileSplitMetadata metadata = new FileSplitMetadata(i, start, end, jobMetadata.ClientUrl, Worker.JOBTRACKER_URL);
                 Task task = new Task(i, metadata, StatusType.NOT_SEND_TO_WORKER);
                 taskList.Add(i, task);
@@ -102,7 +101,7 @@ namespace Server.tracker
                 if (randId != workerId)
                     break;
             }
-            Console.WriteLine("Backup Trackeser = " + existingWorkerMap[randId].Nodeurl + "**********************");
+             Common.Logger().LogInfo("Backup Trackeser = " + existingWorkerMap[randId].Nodeurl + "**********************",string.Empty,string.Empty);
             return existingWorkerMap[randId].Nodeurl;
 
         }
@@ -157,7 +156,6 @@ namespace Server.tracker
                 }
 
                 if(hasReceivedAllVotes()){
-                    Console.WriteLine("all votes received");
                     hasAllReplied = true;
                     foreach (var item in taskList)
                     {
@@ -170,27 +168,24 @@ namespace Server.tracker
 
             if (hasAllReplied && !Worker.isJobTracker)
             {
+                Worker.isJobTracker = true;
+                communicator.TrackerStabilized(existingWorkerMap);//verify bug: different nodes having diff trackers
                 string bkpUrl = GetBackupTrackerUrl();
                 communicator.SendTaskCopyToBackupTracker(bkpUrl, originalTaskList, clientURL);
                 communicator.notifyBackupJobtrackerUrl(bkpUrl, existingWorkerMap);
-                count = 100;
                 startHeartBeat();
-                communicator.TrackerStabilized(existingWorkerMap);
+                Console.WriteLine("all votes received for tracker");
 
                 lock (taskList)
                 {
                     trackerChangeVotes = 0;
                     votedNodes = new HashSet<int>();
-                    Worker.isJobTracker = true;
                     hasForced = false;
                 }
 
             }
             else if (hasMajorityReplied() && !hasForced) {
-                lock (taskList)
-                {
-                    hasForced = true;
-                }
+                hasForced = true;
                 forceMinorityForVote();
             }
         }
@@ -254,21 +249,13 @@ namespace Server.tracker
                 {
                     break;
                 }
-                /* try to do this in a seperate thread */
-                // sendTaskToWorker(nodeId, splitData);
                 Thread thread = new Thread(() => sendTaskToWorker(entry.Key, splitData, Constants.RETRY_ROUNDS));
                 thread.Start();
             }
         }
 
-        /*sending heartbeats*/
-        /*retry 3 times and remove node if not available  */
-        /* Only a dummy method, need to handle failures */
         private void TimerCallback(object state)
         {
-            /* if (count == 2)
-                 return;
-             count++;*/
 
             IWorkerTracker worker = null;
             int workerCount = existingWorkerMap.Count;
@@ -277,12 +264,6 @@ namespace Server.tracker
             {
                 if (existingWorkerMap.ContainsKey(workerIdLIst[i]))
                 {
-                    //KeyValuePair<Int32, WorkerDetails> entry = existingWorkerMap.ElementAt(i);
-                    //int retryRounds = 0;
-
-
-                    // for (; retryRounds < Constants.RETRY_ROUNDS; )
-                    //  {
                     try
                     {
                         lock (workerProxyMap)
@@ -305,13 +286,8 @@ namespace Server.tracker
                     }
                     catch (Exception ex)
                     {
-                        // retryRounds++;
-                        // if (retryRounds == Constants.RETRY_ROUNDS)
-                        //  {
-                        Console.WriteLine("Removed worker from map*****************" + "node is " + workerIdLIst[i]);
                         if(existingWorkerMap.ContainsKey(workerIdLIst[i])){
                         existingWorkerMap.Remove(workerIdLIst[i]);
-                        //worker.getExistingWorkers().Remove(entry.Key);
                         workerCount--;
 
                         Thread taskUpdateThread = new Thread(() => updateTaskList(workerIdLIst[i]));
@@ -320,10 +296,8 @@ namespace Server.tracker
                         Thread thread = new Thread(() => notifyWorkersAboutFailedNode(workerIdLIst[i]));
                         thread.Start();
                         Common.Logger().LogError("node " + workerIdLIst[i] + " was removed while during heartbeat", string.Empty, string.Empty);
-                        Common.Logger().LogError(ex.Message, string.Empty, string.Empty);
+                        Console.WriteLine("Removed worker from map*****************" + "node is " + workerIdLIst[i]);
                         }
-                        //  }
-                        // }
                     }
                 }
             }
@@ -382,7 +356,6 @@ namespace Server.tracker
         //update status of rela
         public void resultSentToClient(int nodeId, int splitId)
         {
-            Console.WriteLine("tracker id is " + this.workerId);
             lock (taskList[splitId])
             {
                 Common.Logger().LogInfo("*************************************", string.Empty, string.Empty);
@@ -552,7 +525,7 @@ namespace Server.tracker
             }
            else
             {
-                Console.WriteLine("tracker with id " + workerId + " has been freezed");
+                Common.Logger().LogError("tracker with id " + workerId + " has been freezed so no new splits sent by him",string.Empty,string.Empty);
             }
         }
 

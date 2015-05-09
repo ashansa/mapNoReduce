@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -80,6 +81,7 @@ namespace Server.worker
 
         internal TaskResult processMapTask(WorkerTaskMetadata workerTaskMetadata, FileSplitMetadata splitMetaData, int workerId)
         {
+           // String chunk = Unzip(workerTaskMetadata.Chunk);
             String chunk = workerTaskMetadata.Chunk;
             //long lineNumber = splitMetaData.StartPosition;
             long bytesProcessed = 0;
@@ -193,5 +195,32 @@ namespace Server.worker
             System.Buffer.BlockCopy(output.ToString().ToCharArray(), 0, bytes, 0, bytes.Length);
             return bytes;
         }
+
+       /* private string Unzip(byte[] bytes)
+        {
+            using (var msi = new MemoryStream(bytes))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
+                {
+                    //gs.CopyTo(mso);
+                    CopyTo(gs, mso, bytes.Length);
+                }
+
+                return System.Text.Encoding.UTF8.GetString(mso.ToArray()); 
+            }
+        }
+        private void CopyTo(Stream src, Stream dest, int count)
+        {
+            byte[] bytes = new byte[count];
+
+            int cnt;
+
+            while ((cnt = src.Read(bytes, 0, bytes.Length)) != 0)
+            {
+                dest.Write(bytes, 0, cnt);
+            }
+        }*/
+
     }
 }
