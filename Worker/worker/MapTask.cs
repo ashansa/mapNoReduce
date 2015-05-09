@@ -18,6 +18,13 @@ namespace Server.worker
         static Boolean requiredStatusSend = false;
         Status currentStatus = new Status();//to keep track of local current status
         Boolean hasthresholdreached = false;
+        object slowLock = new object();
+
+        public object SlowLock
+        {
+            get { return slowLock; }
+            set { slowLock = value; }
+        }
 
         public Boolean Hasthresholdreached
         {
@@ -43,6 +50,7 @@ namespace Server.worker
             get { return isMapSuspended; }
             set { isMapSuspended = value; }
         }
+
 
         public List<Status> StatusList
         {
@@ -112,31 +120,35 @@ namespace Server.worker
                     line = reader.ReadLine();
                     if (line != null)
                     {
-                        if (!IsMapSuspended)
+                        lock (SlowLock)
                         {
-                            runMapperForLine(classType, mapperObj, line);
-                            bytesProcessed += line.Length * sizeof(char) + (Environment.NewLine.Length * sizeof(Char));
-                            setTaskStatus(splitMetaData, totalSize, bytesProcessed, workerId);
+                            if (!IsMapSuspended)
+                            {
+                                runMapperForLine(classType, mapperObj, line);
+                                bytesProcessed += line.Length * sizeof(char) + (Environment.NewLine.Length * sizeof(Char));
+                                setTaskStatus(splitMetaData, totalSize, bytesProcessed, workerId);
+                            }
+                            else
+                            {
+                                //clear the results and wait for next map
+                                result = new List<KeyValuePair<string, string>>();
+                                break;
+                            }
                         }
-                        else
-                        {
-                            //clear the results and wait for next map
-                            result = new List<KeyValuePair<string, string>>();
-                            break;
-                        }
+
                     }
                     else
                     {
                         break;
                     }
+
+
                 }
-                //Console.WriteLine("total sequences" + lineNumber);
-                ////send complete status
-                if (!isMapSuspended)
+                if (!IsMapSuspended)
                     return createTaskResultBoject(splitMetaData.SplitId);
                 else
                 {
-                    isMapSuspended = false;
+                    IsMapSuspended = false;
                     return null;
                 }
             }

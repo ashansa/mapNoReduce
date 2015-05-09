@@ -249,7 +249,7 @@ namespace Server.tracker
                 {
                     break;
                 }
-                Thread thread = new Thread(() => sendTaskToWorker(entry.Key, splitData, Constants.RETRY_ROUNDS));
+                Thread thread = new Thread(() => sendTaskToWorker(entry.Key, splitData));
                 thread.Start();
             }
         }
@@ -365,12 +365,13 @@ namespace Server.tracker
                 }
                 taskList[splitId].StatusType = StatusType.COMPLETED;
                 existingWorkerMap[nodeId].ProcessedSplits.Add(splitId);
+            }
+                
                 if (existingWorkerMap[nodeId].State == WorkerState.ABOUT_TO_IDLE)
                 {
                     existingWorkerMap[nodeId].State = WorkerState.IDLE;
                     ReplaceSlowTasks(nodeId);
                 }
-            }
         }
 
 
@@ -426,7 +427,7 @@ namespace Server.tracker
 
                 if (splitMetadata != null)
                 {
-                    sendTaskToWorker(nodeId, splitMetadata, 1);
+                    sendTaskToWorker(nodeId, splitMetadata);
                 }
                 else
                 {
@@ -435,12 +436,14 @@ namespace Server.tracker
             }
         }
 
+        /*going to replace one slow task*/
         private void ReplaceSlowTasks(int nodeId)
         {
             if (!HasPendingTasks())
             {
                 WorkerDetails bestWorker = null;
-                FileSplitMetadata splitMetadata;
+                FileSplitMetadata splitMetadata = null;
+                int splitId = 0;
                 lock (taskList)
                 {
                     foreach (var pair in taskList)
@@ -448,9 +451,8 @@ namespace Server.tracker
                         /* later change this to have from suspended as well */
                         if (pair.Value.StatusType == StatusType.INPROGRESS)
                         {
-                            int splitId = pair.Key;
+                            splitId = pair.Key;
                             bestWorker = GetBestWorker(pair.Value, nodeId);
-                            //suspend
                             if (bestWorker != null)
                             {
                                 bestWorker.State = WorkerState.ABOUT_TO_BUSY;
@@ -462,12 +464,15 @@ namespace Server.tracker
                                 splitMetadata = pair.Value.SplitMetadata;
                                 taskList[splitId].StatusType = StatusType.INPROGRESS;
                                 taskList[splitId].WorkerId = bestWorker.Nodeid;
-                                sendTaskToWorker(bestWorker.Nodeid, splitMetadata, 1);
+                                sendTaskToWorker(bestWorker.Nodeid, splitMetadata);
                             }
 
                         }
                     }
                 }
+            }
+            else {
+                readyForNewTask(nodeId);
             }
         }
 
@@ -476,7 +481,7 @@ namespace Server.tracker
             WorkerDetails bestWorker = null;
 
             int completedSplitCount = existingWorkerMap[task.WorkerId].ProcessedSplits.Count;
-            if (task.PercentageCompleted < Constants.jobReplaceBoundaryPercentage)
+            if (task.PercentageCompleted <= Constants.jobReplaceBoundaryPercentage)
             {
                 bestWorker = (from worker in existingWorkerMap.Values
                               where worker.ProcessedSplits.Count > completedSplitCount && worker.State == WorkerState.IDLE && worker.Nodeid != nodeId
@@ -489,7 +494,7 @@ namespace Server.tracker
         }
 
 
-        private void sendTaskToWorker(int nodeId, FileSplitMetadata splitMetadata, int roundsToTry)
+        private void sendTaskToWorker(int nodeId, FileSplitMetadata splitMetadata)
         {
             if (!isTrackerFreezed)
             {
@@ -512,9 +517,9 @@ namespace Server.tracker
                             worker = workerProxyMap[nodeId];
                         }
                     }
-
-                    worker.receiveTask(splitMetadata);
                     existingWorkerMap[nodeId].State = WorkerState.BUSY;
+                    worker.receiveTask(splitMetadata);
+                   
                 }
                 catch (Exception ex)
                 {
@@ -649,7 +654,7 @@ namespace Server.tracker
                 FileSplitMetadata newSplitData = getNextPendingSplitFromList(nodeId);
                 if (newSplitData != null)
                 {
-                    sendTaskToWorker(nodeId, newSplitData, 3);
+                    sendTaskToWorker(nodeId, newSplitData);
                     existingWorkerMap[nodeId].State = WorkerState.BUSY;
                 }
             }

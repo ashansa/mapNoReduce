@@ -31,7 +31,7 @@ namespace Server.worker
             get { return latestPingTime; }
             set { latestPingTime = value; }
         }
-        int taskTrackerTimeoutSeconds =Convert.ToInt32(ConfigurationManager.AppSettings[Constants.TASK_TRACKER_TIMEOUT_SECONDS].ToString());
+        int taskTrackerTimeoutSeconds = Convert.ToInt32(ConfigurationManager.AppSettings[Constants.TASK_TRACKER_TIMEOUT_SECONDS].ToString());
         Timer heartBeatTimer = null;
         int count = 0;
 
@@ -112,10 +112,19 @@ namespace Server.worker
         /*Depricated but seems ok*/
         public void slowWorkerThreads(int seconds)
         {
-            Console.WriteLine("worker is going to slow");
+            /*
+            Console.WriteLine("worker is going to slow for " + seconds);
             splitProcessor.Suspend();
             Thread.Sleep(seconds * 1000);
             splitProcessor.Resume();
+            Console.WriteLine("worker is resuming");*/
+
+            Console.WriteLine("going o slow");
+            lock (mapTask.SlowLock)
+            {
+                Thread.Sleep(seconds * 1000);
+            }
+            Console.WriteLine("recovered");
 
         }
 
@@ -135,7 +144,7 @@ namespace Server.worker
                     taskResult = taskResultList[0];
                     taskResultList.RemoveAt(0);
                 }
-            
+
                 resultSentSplits.Add(taskResult.SplitId);
                 communicator.sendResultsToClient(taskResult, this);
                 communicator.notifyResultsSentToClientEvent(workerId, taskResult, this);
@@ -227,15 +236,32 @@ namespace Server.worker
             }
             else
             {
+                List<FileSplitMetadata> copySplit = new List<FileSplitMetadata>(splitMetadataList);
+                List<TaskResult> copyResults = new List<TaskResult>(taskResultList);
                 lock (splitMetadataList)
                 {
                     if (splitMetadataList.Count > 0)
                     {
-                        for (int i = 0; i < splitMetadataList.Count; i++)
+                        foreach (FileSplitMetadata meta in copySplit)
                         {
-                            if (splitMetadataList[i].SplitId == splitId)
+                            if (meta.SplitId == splitId)
                             {
-                                splitMetadataList.RemoveAt(i);
+                                splitMetadataList.Remove(meta);
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                lock (taskResultList)
+                {
+                    if (taskResultList.Count > 0)
+                    {
+                        foreach (TaskResult result in copyResults)
+                        {
+                            if (result.SplitId == splitId)
+                            {
+                                taskResultList.Remove(result);
                                 return true;
                             }
                         }
@@ -243,6 +269,7 @@ namespace Server.worker
                 }
 
             }
+
             return false;
         }
 
@@ -289,8 +316,8 @@ namespace Server.worker
         {
             communicator.IsTrackerChanging = true;
 
-            if(!hasForced)
-            Thread.Sleep(1000);//This allow the working threads to stop detacting jobtracker failure
+            if (!hasForced)
+                Thread.Sleep(1000);//This allow the working threads to stop detacting jobtracker failure
             List<int> inprogressSplits = new List<int>();
             lock (splitMetadataList)
             {
@@ -316,7 +343,7 @@ namespace Server.worker
                     }
                 }
             }
-           // Worker.JOBTRACKER_URL = Worker.BKP_JOBTRACKER_URL;
+            // Worker.JOBTRACKER_URL = Worker.BKP_JOBTRACKER_URL;
             communicator.FeedNewTracker(workerId, inprogressSplits, resultSentSplits);
             Common.Logger().LogInfo("Feed Message Sent by " + workerId + "********************", string.Empty, string.Empty);
             // }
@@ -333,7 +360,7 @@ namespace Server.worker
             latestPingTime = DateTime.Now;
             hasHeartBeatInitiated = true;
             this.startTimer();
-            
+
             Console.WriteLine("Tracker Stabilized " + workerId + " current tracker is " + Worker.JOBTRACKER_URL);
             Console.WriteLine("Backup url  " + Worker.BKP_JOBTRACKER_URL);
 
@@ -409,20 +436,19 @@ namespace Server.worker
                         break;
 
                     case StatusType.COMPLETED:
-                        foreach (int split in entry.Value)
+                        foreach (TaskResult result in copyResults)
                         {
                             lock (taskResultList)
                             {
-                                foreach (TaskResult result in copyResults)
+                                Boolean isAvailable = false;
+                                foreach (int split in entry.Value)
                                 {
-                                    Boolean isAvailable = false;
                                     if (result.SplitId == split)
                                     {
                                         isAvailable = true;
                                     }
-                                    if (!isAvailable && taskResultList.Contains(result)) taskResultList.Remove(result);
-
                                 }
+                                if (!isAvailable && taskResultList.Contains(result)) taskResultList.Remove(result);
                             }
                         }
                         break;
@@ -432,7 +458,7 @@ namespace Server.worker
             }
         }
     }
-    }
+}
 
-    
+
 
