@@ -15,9 +15,9 @@ namespace PADIMapNoReduce
     /// <summary>
     /// Program class is a container for application entry point Main
     /// </summary>
-   public class Worker : MarshalByRefObject, IWorkerTracker
+    public class Worker : MarshalByRefObject, IWorkerTracker
     {
-        public static string JOBTRACKER_URL=null;
+        public static string JOBTRACKER_URL = null;
         public static string BKP_JOBTRACKER_URL;
         public static string CLIENT_URL;
         IClient client;
@@ -26,9 +26,9 @@ namespace PADIMapNoReduce
         TrackerTask trackerTask;
         int workerId;
         Dictionary<Int32, WorkerDetails> existingWorkerMap = new Dictionary<Int32, WorkerDetails>();
-        String serviceUrl;
+        public static string serviceUrl;
         public static bool isJobTracker;
-  
+
 
         public Worker(int id)
         {
@@ -90,7 +90,7 @@ namespace PADIMapNoReduce
         {
             if (!WorkerTask.IS_WORKER_FREEZED)
             {
-                Common.Logger().LogInfo("Task Received ++++++++++++++++ from " + splitMetadata.JobTrackerUrl,string.Empty,string.Empty);
+                Common.Logger().LogInfo("Task Received ++++++++++++++++ from " + splitMetadata.JobTrackerUrl, string.Empty, string.Empty);
                 CLIENT_URL = splitMetadata.ClientUrl;
                 JOBTRACKER_URL = splitMetadata.JobTrackerUrl;
                 workerTask.addSplitToSplitList(splitMetadata);
@@ -98,7 +98,7 @@ namespace PADIMapNoReduce
             }
             else
             {
-               // workerTask.stopTimer();
+                // workerTask.stopTimer();
                 throw new RemoteComException();
             }
         }
@@ -126,9 +126,10 @@ namespace PADIMapNoReduce
                 throw new RemoteComException();
             }
         }
+
         public bool suspendTask(int splitId)//job tracker will invoke this after certain slowness
         {
-            Console.WriteLine("one task suspended "+workerId);
+            Console.WriteLine("one task suspended " + workerId);
             return workerTask.suspendOrRemoveMapTask(splitId);
         }
 
@@ -137,6 +138,10 @@ namespace PADIMapNoReduce
             if (existingWorkerMap.ContainsKey(key))
             {
                 existingWorkerMap.Remove(key);
+            }
+            if (trackerTask != null)
+            {
+                trackerTask.removeWorker(key);
             }
         }
 
@@ -147,13 +152,13 @@ namespace PADIMapNoReduce
 
         public void jobCompleted()
         {
-           // workerTask.stopWorkerThreads();
-            if(existingWorkerMap.Count>1)
-            workerTask.stopTimer();
+            // workerTask.stopWorkerThreads();
+            if (existingWorkerMap.Count > 1)
+                workerTask.stopTimer();
         }
         public void forceTrackerChange()
         {
-            Common.Logger().LogInfo("TRACKER CHANGE FORCED RECEIVED",string.Empty,string.Empty);
+            Common.Logger().LogInfo("TRACKER CHANGE FORCED RECEIVED", string.Empty, string.Empty);
             workerTask.InitiateTrackerTransition(true);
         }
 
@@ -164,7 +169,16 @@ namespace PADIMapNoReduce
             if (existingWorkerMap.Count > 1)//no timers in case of one node
                 workerTask.startTimer();
         }
+        public Dictionary<StatusType, List<int>> getRecoveryStatus()
+        {
+            return workerTask.getStatusOnFreezed();
+        }
 
+        public void updateRecoveredWorker(Dictionary<StatusType, List<int>> updatedStatus)
+        {
+            Console.WriteLine("fail node recovered its status");
+            workerTask.updateDataStructures(updatedStatus);
+        }
         #endregion
         #endregion
 
@@ -176,7 +190,7 @@ namespace PADIMapNoReduce
             //now he is a Job Tracker. Implement all job tracker functions upon this
             //Start channel with other workers as Job tracker
 
-            JOBTRACKER_URL = this.serviceUrl;//I set my own as job tracker url
+            JOBTRACKER_URL = serviceUrl;//I set my own as job tracker url
             isJobTracker = true;
 
             CLIENT_URL = jobMetadata.ClientUrl;
@@ -188,9 +202,9 @@ namespace PADIMapNoReduce
             trackerTask = new TrackerTask(CLIENT_URL, existingWorkerMap, workerId);
             client = (IClient)Activator.GetObject(typeof(IClient), CLIENT_URL);
 
-           trackerTask.notifyWorkersForJobStart();
-           if (existingWorkerMap.Count > 1)
-           {
+            trackerTask.notifyWorkersForJobStart();
+            if (existingWorkerMap.Count > 1)
+            {
                 trackerTask.startHeartBeat();//should work even with 1 
             }
 
@@ -206,11 +220,11 @@ namespace PADIMapNoReduce
         }
 
 
-        public void taskCompleted(int nodeId, int splitId)
+        public void taskCompleted(int nodeId, int splitId, string url)
         {
             try
             {
-                trackerTask.resultSentToClient(nodeId, splitId);
+                trackerTask.resultSentToClient(nodeId, splitId, url);
                 if (trackerTask.isJobCompleted())
                 {
                     client.receiveJobCompletedNotification();
@@ -228,15 +242,22 @@ namespace PADIMapNoReduce
                 Common.Logger().LogError(ex.Message, ex.StackTrace, string.Empty);
             }
         }
+        public void notifyWorkerRecovery(int workerID, string nodeURL, List<int> processingSplits, List<int> alreadySentSplits)
+        {
+            WorkerCommunicator communicator = new WorkerCommunicator();
+            Dictionary<StatusType, List<int>> statusOfWorker = communicator.getRecoveredStatus(nodeURL);
+            Dictionary<StatusType, List<int>> updatedStatus = trackerTask.getStatusForWorker(statusOfWorker, workerId, nodeURL);
+            communicator.updateRecoveredWorker(updatedStatus, nodeURL);
+        }
 
         public void readyForNewTask(int nodeId)
         {
             trackerTask.readyForNewTask(nodeId);
         }
 
-        public void ChangeTracker(int workerID, List<int> processingSplits, List<int> alreadySentSplits)
+        public void ChangeTracker(int workerID, String workerURL, List<int> processingSplits, List<int> alreadySentSplits)
         {
-            trackerTask.ChangeTracker(workerID, processingSplits, alreadySentSplits);
+            trackerTask.ChangeTracker(workerID, workerURL, processingSplits, alreadySentSplits);
         }
 
         public void SetCopyOfTasks(Dictionary<int, Task> tasks, string clientUrl)
@@ -244,6 +265,7 @@ namespace PADIMapNoReduce
             trackerTask = new TrackerTask(clientUrl, existingWorkerMap, workerId);
             client = (IClient)Activator.GetObject(typeof(IClient), clientUrl);
             trackerTask.SetCopyOfTasks(tasks);
+            Console.WriteLine("Tasklist copied to backup with id***********************" + workerId);
             Common.Logger().LogInfo("Tasklist copied to backup with id***********************" + workerId, string.Empty, string.Empty);
 
         }
@@ -261,11 +283,11 @@ namespace PADIMapNoReduce
 
         public Boolean initWorker(WorkerMetadata workerMetadata)
         {
-            this.serviceUrl = workerMetadata.ServiceURL;
+            serviceUrl = workerMetadata.ServiceURL;
             startWorker();
             WorkerCommunicator communicator = new WorkerCommunicator();
             this.WorkerId = workerMetadata.WorkerId;
-           // workerTask = new WorkerTask(WorkerId);
+            // workerTask = new WorkerTask(WorkerId);
 
             if (workerMetadata.EntryURL == null || workerMetadata.EntryURL == String.Empty)//this is the first worker
             {
@@ -279,24 +301,24 @@ namespace PADIMapNoReduce
                 addNewWorker(workerMetadata.WorkerId, workerMetadata.ServiceURL); //add self
             }
 
-           // startWorkerTasks();
+            // startWorkerTasks();
             return true;
         }
 
         public void displayStatus()
         {
-                if (isJobTracker && trackerTask!=null)
-                {
-                    trackerTask.printStatus(workerId);
-                }
-                Status status = workerTask.getMapTask().CurrentStatus;
-                if (workerTask != null && workerTask.getMapTask() != null && status != null)
-                {
-                    Console.WriteLine("###########Worker Status #########");
-                    Console.WriteLine("worker id is " + workerId + " Split id is " + status.SplitId + " status is" + status.PercentageCompleted + "%");
-                    Console.WriteLine("########################");
-                }
+            if (isJobTracker && trackerTask != null)
+            {
+                trackerTask.printStatus(workerId);
             }
+            Status status = workerTask.getMapTask().CurrentStatus;
+            if (workerTask != null && workerTask.getMapTask() != null && status != null)
+            {
+                Console.WriteLine("###########Worker Status #########");
+                Console.WriteLine("worker id is " + workerId + " Split id is " + status.SplitId + " status is" + status.PercentageCompleted + "%");
+                Console.WriteLine("########################");
+            }
+        }
 
 
         public void slowWorker(int seconds)
@@ -306,31 +328,32 @@ namespace PADIMapNoReduce
 
         public void freezeWorker()
         {
-                WorkerTask.IS_WORKER_FREEZED = true;
-                workerTask.stopTimer();
-                Console.WriteLine("going to freeze worker " + workerId);
-                Common.Logger().LogInfo("going to freeze " + workerId, string.Empty, string.Empty);
+            WorkerTask.IS_WORKER_FREEZED = true;
+            workerTask.stopTimer();
+            Console.WriteLine("going to freeze worker " + workerId);
+            Common.Logger().LogInfo("going to freeze " + workerId, string.Empty, string.Empty);
         }
 
         public void unfreezeWorker()
         {
-                Console.WriteLine("going to unfreeze " + workerId);
-                Common.Logger().LogInfo("going to unfreeze "+workerId, string.Empty, string.Empty);
-                WorkerTask.IS_WORKER_FREEZED = false;
-                workerTask.LatestPingTime = DateTime.Now;
-                workerTask.startTimer();
-                WorkerCommunicator communicator = new WorkerCommunicator();
-                Dictionary<StatusType, List<Int32>> freezedWorkerStatus = workerTask.getStatusOnFreezed();
-                Dictionary<StatusType, List<Int32>> updatedStatus = communicator.notifyTrackerOnUnfreeze(freezedWorkerStatus, workerId, serviceUrl);
-                workerTask.updateDataStructures(updatedStatus);
-                /*this should happen after getting all major details*/
-                workerTask.checkWorkerFreezed();
+            Console.WriteLine("going to unfreeze " + workerId);
+            Common.Logger().LogInfo("going to unfreeze " + workerId, string.Empty, string.Empty);
+            WorkerTask.IS_WORKER_FREEZED = false;
+            workerTask.LatestPingTime = DateTime.Now;
+            workerTask.startTimer();//to restart heartbeat
+
+            /*  WorkerCommunicator communicator = new WorkerCommunicator();
+              Dictionary<StatusType, List<Int32>> freezedWorkerStatus = workerTask.getStatusOnFreezed();
+              Dictionary<StatusType, List<Int32>> updatedStatus = communicator.notifyTrackerOnUnfreeze(freezedWorkerStatus, workerId, serviceUrl);
+              workerTask.updateDataStructures(updatedStatus);*/
+            /*this should happen after getting all major details*/
+            workerTask.checkWorkerFreezed();
         }
 
         public void freezeTracker()
         {
             trackerTask.IsTrackerFreezed = true;
-            trackerTask.stopHeatBeat();
+            trackerTask.stopHeatBeat();//to block communication
             Console.WriteLine("going to freeze tracker" + workerId);
             Common.Logger().LogInfo("going to freeze tracker" + workerId, string.Empty, string.Empty);
 
@@ -339,8 +362,7 @@ namespace PADIMapNoReduce
         public void unfreezeTracker()
         {
             trackerTask.IsTrackerFreezed = false;
-            Common.Logger().LogInfo("going to unfreeze tracker" + workerId, string.Empty, string.Empty);
-            Console.WriteLine("Going to unfreeze tracker. But current tracker URL is " + Worker.JOBTRACKER_URL);
+            Common.Logger().LogInfo("Going to unfreeze tracker. But current tracker URL is " + Worker.JOBTRACKER_URL, string.Empty, string.Empty);
             isJobTracker = false;
         }
 
@@ -366,6 +388,8 @@ namespace PADIMapNoReduce
             return null;
         }
         #endregion
+
+
 
     }
 

@@ -21,5 +21,8 @@ namespace PADIMapNoReduce
         void jobCompleted(); 
        void forceTrackerChange();
        void receiveNewJob();
+
+       Dictionary<StatusType, List<int>> getRecoveryStatus();
+       void updateRecoveredWorker(Dictionary<StatusType, List<int>> updatedStatus);
     }
 }

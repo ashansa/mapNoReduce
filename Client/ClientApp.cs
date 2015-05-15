@@ -30,7 +30,6 @@ namespace PADIMapNoReduce
             Client client = new Client();
             client.initClient();
             client.submitTask(txtContactWorker.Text, txInputPath.Text, txOutputPath.Text, Convert.ToInt32(txSplits.Text), txtMapperName.Text, txMapperPath.Text);
-          // new Client("tcp://localhost:9443/Client").submitTask(txInputPath.Text, txOutputPath.Text, splits, txMapper.Text);
         }
 
         private void ClientApp_Load(object sender, EventArgs e)

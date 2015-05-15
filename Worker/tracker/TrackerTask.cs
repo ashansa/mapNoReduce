@@ -31,7 +31,7 @@ namespace Server.tracker
             set { isTrackerFreezed = value; }
         }
 
-     
+
         WorkerCommunicator communicator = new WorkerCommunicator();
 
         int count = 0;
@@ -63,7 +63,7 @@ namespace Server.tracker
 
         public void splitJob(JobMetadata jobMetadata)
         {
-             Common.Logger().LogInfo("splitting job",string.Empty,string.Empty);
+            Common.Logger().LogInfo("splitting job", string.Empty, string.Empty);
             long totalBytes = jobMetadata.TotalByteCount;
             long splits = jobMetadata.SplitCount;
 
@@ -97,11 +97,11 @@ namespace Server.tracker
             int randId = 0;
             while (true)
             {
-                randId = rand.Next(1, (existingWorkerMap.Count));
+                randId = rand.Next(1, (existingWorkerMap.Count+1));
                 if (randId != workerId)
                     break;
             }
-             Common.Logger().LogInfo("Backup Trackeser = " + existingWorkerMap[randId].Nodeurl + "**********************",string.Empty,string.Empty);
+            Common.Logger().LogInfo("Backup Trackeser = " + existingWorkerMap[randId].Nodeurl + "**********************", string.Empty, string.Empty);
             return existingWorkerMap[randId].Nodeurl;
 
         }
@@ -117,7 +117,7 @@ namespace Server.tracker
             if (heartBeatTimer != null)
             {
                 heartBeatTimer.Dispose();
-                Console.WriteLine("Heart Beat timer disposed");
+                Common.Logger().LogInfo("Heart Beat timer disposed",string.Empty,string.Empty);
             }
         }
 
@@ -136,9 +136,10 @@ namespace Server.tracker
         }
 
         Boolean hasForced = false;
-        public void ChangeTracker(int workerID, List<int> processingSplits, List<int> alreadySentSplits)
+        public void ChangeTracker(int workerID, String nodeURL, List<int> processingSplits, List<int> alreadySentSplits)
         {
-            bool hasAllReplied=false;
+            if(existingWorkerMap.ContainsKey(workerID)){
+            bool hasAllReplied = false;
             lock (taskList)
             {
                 trackerChangeVotes++;
@@ -155,7 +156,8 @@ namespace Server.tracker
                     taskList[item].WorkerId = workerID;
                 }
 
-                if(hasReceivedAllVotes()){
+                if (hasReceivedAllVotes())
+                {
                     hasAllReplied = true;
                     foreach (var item in taskList)
                     {
@@ -164,12 +166,10 @@ namespace Server.tracker
                 }
             }
 
-            //TODO:start timer to notify minority
-
             if (hasAllReplied && !Worker.isJobTracker)
             {
                 Worker.isJobTracker = true;
-                communicator.TrackerStabilized(existingWorkerMap);//verify bug: different nodes having diff trackers
+                communicator.TrackerStabilized(existingWorkerMap);
                 string bkpUrl = GetBackupTrackerUrl();
                 communicator.SendTaskCopyToBackupTracker(bkpUrl, originalTaskList, clientURL);
                 communicator.notifyBackupJobtrackerUrl(bkpUrl, existingWorkerMap);
@@ -184,10 +184,16 @@ namespace Server.tracker
                 }
 
             }
-            else if (hasMajorityReplied() && !hasForced) {
+            else if (hasMajorityReplied() && !hasForced)
+            {
                 hasForced = true;
                 forceMinorityForVote();
             }
+            }
+          /* else{
+           Console.WriteLine("bkp received from failed node");
+           communicator.notifyRecoveryNodeToTracker(workerID,nodeURL, processingSplits, alreadySentSplits);
+            }*/
         }
 
         /* if after a timeout still doenst have majority, notify them as tracker is alive */
@@ -197,24 +203,24 @@ namespace Server.tracker
             HashSet<int> keySet = new HashSet<int>(existingWorkerMap.Keys);
             var minoritySet = keySet.Except(votedNodes);
             IWorkerTracker worker;
-            foreach (int workerId in minoritySet)
+            foreach (int nodeId in minoritySet)
             {
                 try
                 {
                     lock (workerProxyMap)
                     {
-                        if (!workerProxyMap.ContainsKey(workerId))
+                        if (!workerProxyMap.ContainsKey(nodeId))
                         {
-                            string url = existingWorkerMap[workerId].Nodeurl;
+                            string url = existingWorkerMap[nodeId].Nodeurl;
                             worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), url);
                             if (worker != null)
                             {
-                                workerProxyMap.Add(workerId, worker);
+                                workerProxyMap.Add(nodeId, worker);
                             }
                         }
                         else
                         {
-                            worker = workerProxyMap[workerId];
+                            worker = workerProxyMap[nodeId];
                         }
                     }
                     Thread thread = new Thread(() => worker.forceTrackerChange());
@@ -229,12 +235,12 @@ namespace Server.tracker
 
         private bool hasMajorityReplied()
         {
-            return (votedNodes.Count == existingWorkerMap.Count - 1) ?true:false;
+            return (votedNodes.Count == existingWorkerMap.Count - 1) ? true : false;
         }
 
         private bool hasReceivedAllVotes()
         {
-        return votedNodes.Count==existingWorkerMap.Count?true:false;
+            return votedNodes.Count == existingWorkerMap.Count ? true : false;
         }
 
 
@@ -256,7 +262,6 @@ namespace Server.tracker
 
         private void TimerCallback(object state)
         {
-
             IWorkerTracker worker = null;
             int workerCount = existingWorkerMap.Count;
             List<int> workerIdLIst = new List<int>(existingWorkerMap.Keys);
@@ -286,24 +291,27 @@ namespace Server.tracker
                     }
                     catch (Exception ex)
                     {
-                        if(existingWorkerMap.ContainsKey(workerIdLIst[i])){
-                        existingWorkerMap.Remove(workerIdLIst[i]);
-                        workerCount--;
+                        if (existingWorkerMap.ContainsKey(workerIdLIst[i]))
+                        {
+                            existingWorkerMap.Remove(workerIdLIst[i]);
+                            workerCount--;
 
-                        Thread taskUpdateThread = new Thread(() => updateTaskList(workerIdLIst[i]));
-                        taskUpdateThread.Start();
-                        /*do the failed notification sending in a seperate thread*/
-                        Thread thread = new Thread(() => notifyWorkersAboutFailedNode(workerIdLIst[i]));
-                        thread.Start();
-                        Common.Logger().LogError("node " + workerIdLIst[i] + " was removed while during heartbeat", string.Empty, string.Empty);
-                        Console.WriteLine("Removed worker from map*****************" + "node is " + workerIdLIst[i]);
+                            /*Thread taskUpdateThread = new Thread(() => updateTaskList(workerIdLIst[i]));
+                            taskUpdateThread.Start();*/
+                            updateTaskList(workerIdLIst[i]);
+                            /*do the failed notification sending in a seperate thread*/
+                            /*Thread thread = new Thread(() => notifyWorkersAboutFailedNode(workerIdLIst[i]));
+                            thread.Start();*/
+                            notifyWorkersAboutFailedNode(workerIdLIst[i]);
+                            Common.Logger().LogError("node " + workerIdLIst[i] + " was removed while during heartbeat", string.Empty, string.Empty);
+                            Console.WriteLine("Removed worker from map*****************" + "node is " + workerIdLIst[i]);
                         }
                     }
                 }
             }
         }
 
-        /*change all splits processed by that node to inprogress*/
+        /*change all splits processed by that node to not processed*/
         private void updateTaskList(int failedNodeId)
         {
             lock (taskList)
@@ -354,26 +362,41 @@ namespace Server.tracker
         }
 
         //update status of rela
-        public void resultSentToClient(int nodeId, int splitId)
+        public void resultSentToClient(int nodeId, int splitId, string nodeURL)
         {
-            lock (taskList[splitId])
+            /*A failed node sending its split*/
+            if (!existingWorkerMap.ContainsKey(nodeId))
             {
-                Common.Logger().LogInfo("*************************************", string.Empty, string.Empty);
-                foreach (var item in taskList)
-                {
-                    Common.Logger().LogInfo("on result send Split ID= " + item.Key + " WorkerID = " + item.Value.WorkerId + " Status= " + item.Value.StatusType.ToString(), string.Empty, string.Empty);
-                }
-                taskList[splitId].StatusType = StatusType.COMPLETED;
-                existingWorkerMap[nodeId].ProcessedSplits.Add(splitId);
+                Console.WriteLine("Tracker received a completed split from recovered node");
+                WorkerDetails workerObj = getWorker(nodeId, nodeURL);
+                existingWorkerMap.Add(nodeId, workerObj);
+                // requestWorkerStatus(nodeId);
+
+                //retrieve his status and send split if he has no job
+                WorkerCommunicator communicator = new WorkerCommunicator();
+                Dictionary<StatusType, List<int>> statusOfWorker = communicator.getRecoveredStatus(nodeURL);
+                Dictionary<StatusType, List<int>> updatedStatus = getStatusForWorker(statusOfWorker, nodeId, nodeURL);
+                communicator.updateRecoveredWorker(updatedStatus, nodeURL);
+                notifyWorkersAboutUnfreezed(nodeId, nodeURL);
             }
-                
+
+                lock (taskList[splitId])
+                {
+                    Common.Logger().LogInfo("*************************************", string.Empty, string.Empty);
+                    foreach (var item in taskList)
+                    {
+                        Common.Logger().LogInfo(" Split ID= " + item.Key + " WorkerID = " + item.Value.WorkerId + " Status= " + item.Value.StatusType.ToString(), string.Empty, string.Empty);
+                    }
+                    taskList[splitId].StatusType = StatusType.COMPLETED;
+                    existingWorkerMap[nodeId].ProcessedSplits.Add(splitId);
+                }
+
                 if (existingWorkerMap[nodeId].State == WorkerState.ABOUT_TO_IDLE)
                 {
                     existingWorkerMap[nodeId].State = WorkerState.IDLE;
                     ReplaceSlowTasks(nodeId);
                 }
         }
-
 
         internal void updateStatus(Status status)
         {
@@ -471,7 +494,8 @@ namespace Server.tracker
                     }
                 }
             }
-            else {
+            else
+            {
                 readyForNewTask(nodeId);
             }
         }
@@ -519,7 +543,7 @@ namespace Server.tracker
                     }
                     existingWorkerMap[nodeId].State = WorkerState.BUSY;
                     worker.receiveTask(splitMetadata);
-                   
+
                 }
                 catch (Exception ex)
                 {
@@ -528,9 +552,9 @@ namespace Server.tracker
                     Common.Logger().LogError(ex.Message, string.Empty, string.Empty);
                 }
             }
-           else
+            else
             {
-                Common.Logger().LogError("tracker with id " + workerId + " has been freezed so no new splits sent by him",string.Empty,string.Empty);
+                Common.Logger().LogError("tracker with id " + workerId + " has been freezed so no new splits sent by him", string.Empty, string.Empty);
             }
         }
 
@@ -766,6 +790,14 @@ namespace Server.tracker
                 {
                     Common.Logger().LogError("Unable to notify others about unfreeze by Job Tracker", string.Empty, string.Empty);
                 }
+            }
+        }
+
+        internal void removeWorker(int key)
+        {
+            if (existingWorkerMap.ContainsKey(key))
+            {
+                existingWorkerMap.Remove(key);
             }
         }
     }

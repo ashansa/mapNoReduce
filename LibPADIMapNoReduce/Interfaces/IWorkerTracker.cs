@@ -9,5 +9,6 @@ namespace PADIMapNoReduce
      * ) activator should also be the same type*/
    public interface IWorkerTracker:IWorker,IJobTracker
     {
+       
     }
 }

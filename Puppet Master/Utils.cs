@@ -108,16 +108,26 @@ namespace Puppet_Master
             thread.Start();
         }
 
-        public void executeScript(string[] scriptCommands)
+        public void executeScript(string[] scriptCommands, PuppetUI puppetUI)
         {
+            int lineNo = 0;
             foreach (string line in scriptCommands)
             {
                 //ignoring lines starting with %  - comment lines
                 if (!line.StartsWith("%"))
                 {
+                    PuppetUI.highlightStatus eve = new PuppetUI.highlightStatus(puppetUI.highlightIndex);
+                    try
+                    {
+                        puppetUI.Invoke(eve, new Object[] { lineNo});
+                    }
+                    catch (Exception ex)
+                    {
 
+                    }
                     executeCommand(line);
                 }
+                lineNo++;
             }
         }
 

@@ -42,7 +42,7 @@ namespace Server.worker
         {
             try
             {
-                //workerTask.checkWorkerFreezed();
+                workerTask.checkWorkerFreezed();
                 //CheckSystemStability();
                 if (clientProxy == null)
                 {
@@ -80,12 +80,16 @@ namespace Server.worker
             }
         }
 
-        public void FeedNewTracker(int workerID, List<int> processingSplits, List<int> alreadySentSplits)
+        public void FeedNewTracker(int workerID,String workerURL, List<int> processingSplits, List<int> alreadySentSplits)
         {
-            trackerProxy = (IWorkerTracker)Activator.GetObject(
-                               typeof(IWorkerTracker),
-                               Worker.BKP_JOBTRACKER_URL);
-            trackerProxy.ChangeTracker(workerID, processingSplits, alreadySentSplits);
+            if (!WorkerTask.IS_WORKER_FREEZED)
+            {
+
+                trackerProxy = (IWorkerTracker)Activator.GetObject(
+                                   typeof(IWorkerTracker),
+                                   Worker.BKP_JOBTRACKER_URL);
+                trackerProxy.ChangeTracker(workerID,workerURL, processingSplits, alreadySentSplits);
+            }
         }
 
         public void TrackerStabilized(Dictionary<Int32, WorkerDetails> existingWorkerList)
@@ -142,7 +146,7 @@ namespace Server.worker
                                 typeof(IWorkerTracker),
                                 Worker.JOBTRACKER_URL);
                 }
-                trackerProxy.taskCompleted(workerId, splitId);
+                trackerProxy.taskCompleted(workerId, splitId,Worker.serviceUrl);
             }
             catch (Exception ex)
             {
@@ -164,7 +168,7 @@ namespace Server.worker
                                Worker.JOBTRACKER_URL);
                 }
                 Common.Logger().LogInfo("Sent to taskCompleted by Worker ID = " + workerId + " Split Id= " + taskResult.SplitId, string.Empty, string.Empty);
-                trackerProxy.taskCompleted(workerId, taskResult.SplitId);
+                trackerProxy.taskCompleted(workerId, taskResult.SplitId,Worker.serviceUrl);
 
             }
             catch (Exception ex)
@@ -178,10 +182,6 @@ namespace Server.worker
 
         internal void hasThresholdReached(int nodeId)
         {
-            if (IsTrackerChanging)
-            {
-                return;
-            }
 
             if (!WorkerTask.IS_WORKER_FREEZED)
             {
@@ -223,6 +223,29 @@ namespace Server.worker
                     Monitor.PulseAll(trackerLock);
                 }
             }
+        }
+
+        internal void notifyRecoveryNodeToTracker(int workerID, string nodeURL, List<int> processingSplits, List<int> alreadySentSplits)
+        {
+            if (trackerProxy == null)
+            {
+                trackerProxy = (IWorkerTracker)Activator.GetObject(
+                            typeof(IWorkerTracker),
+                            Worker.JOBTRACKER_URL);
+            }
+            trackerProxy.notifyWorkerRecovery(workerID, nodeURL, processingSplits, alreadySentSplits);
+        }
+
+        internal  Dictionary<StatusType, List<int>> getRecoveredStatus(string nodeURL)
+        {
+            IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), nodeURL);
+           return  worker.getRecoveryStatus();
+        }
+
+        internal void updateRecoveredWorker(Dictionary<StatusType, List<int>> updatedStatus,String workerURL)
+        {
+            IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), workerURL);
+           worker.updateRecoveredWorker(updatedStatus);
         }
     }
 }

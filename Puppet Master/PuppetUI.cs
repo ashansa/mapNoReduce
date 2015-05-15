@@ -15,7 +15,7 @@ namespace Puppet_Master
 {
     public partial class PuppetUI : Form
     {
-
+        public delegate void highlightStatus(int index);
         Utils utils = new Utils();
         string scriptPath = null;
         string[] scriptCommands = null;
@@ -62,6 +62,7 @@ namespace Puppet_Master
                 scriptPath = openScriptFileDialog.FileName;
             }
             scriptCommands = File.ReadAllLines(scriptPath);
+            listBox1.Items.Clear();
             foreach (string command in scriptCommands)
             {
                 listBox1.Items.Add(command);
@@ -76,7 +77,7 @@ namespace Puppet_Master
             }
             else
             {
-                Thread thread = new Thread(() => utils.executeScript(scriptCommands));
+                Thread thread = new Thread(() => utils.executeScript(scriptCommands,this));
                 thread.Start();
 
             }
@@ -96,6 +97,11 @@ namespace Puppet_Master
             }
             Thread thread = new Thread(() => utils.executeCommand(command));
             thread.Start();
+        }
+
+        public void highlightIndex(int index)
+        {
+            listBox1.SelectedIndex = index;
         }
     }
 }

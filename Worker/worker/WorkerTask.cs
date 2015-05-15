@@ -55,7 +55,7 @@ namespace Server.worker
         {
             int heartbeatInterval = Convert.ToInt32(ConfigurationManager.AppSettings[Constants.TASK_TRACKER_HEARTBEAT_INTERVAL].ToString());
             heartBeatTimer = new Timer(CheckTaskTrackerFailure, null, 0, heartbeatInterval);
-            Console.WriteLine("Worker Timer Started");
+            Common.Logger().LogInfo("Worker Timer Started",string.Empty,string.Empty);
         }
 
         public void stopTimer()
@@ -63,7 +63,7 @@ namespace Server.worker
             if (heartBeatTimer != null)
             {
                 heartBeatTimer.Dispose();
-                Console.WriteLine("Worker timer disposed");
+                Common.Logger().LogInfo("Worker timer disposed",string.Empty,string.Empty);
             }
 
         }
@@ -119,7 +119,7 @@ namespace Server.worker
             splitProcessor.Resume();
             Console.WriteLine("worker is resuming");*/
 
-            Console.WriteLine("going o slow");
+            Console.WriteLine("going to slow");
             lock (mapTask.SlowLock)
             {
                 Thread.Sleep(seconds * 1000);
@@ -299,11 +299,11 @@ namespace Server.worker
 
         private void CheckTaskTrackerFailure(object state)
         {
-            if (hasHeartBeatInitiated && !IS_WORKER_FREEZED)//don,t do this if worker has failed
+            if (hasHeartBeatInitiated && !IS_WORKER_FREEZED)//don,t do this if worker has failed--> changed to faied job tracker detected repeatedly
             {
                 if (DateTime.Now.Subtract(latestPingTime).Seconds > taskTrackerTimeoutSeconds)
                 {
-                    Console.WriteLine("Failed Task tracker detected****************************");
+                    Console.WriteLine("Failed Job tracker detected****************************");
                     hasHeartBeatInitiated = false;
                     this.stopTimer();
                     hasTrackerChanged = true;
@@ -316,7 +316,7 @@ namespace Server.worker
         {
             communicator.IsTrackerChanging = true;
 
-            if (!hasForced)
+            if (!hasForced )
                 Thread.Sleep(1000);//This allow the working threads to stop detacting jobtracker failure
             List<int> inprogressSplits = new List<int>();
             lock (splitMetadataList)
@@ -344,8 +344,11 @@ namespace Server.worker
                 }
             }
             // Worker.JOBTRACKER_URL = Worker.BKP_JOBTRACKER_URL;
-            communicator.FeedNewTracker(workerId, inprogressSplits, resultSentSplits);
-            Common.Logger().LogInfo("Feed Message Sent by " + workerId + "********************", string.Empty, string.Empty);
+            if (!IS_WORKER_FREEZED)
+            {
+                communicator.FeedNewTracker(workerId,Worker.serviceUrl, inprogressSplits, resultSentSplits);
+                Common.Logger().LogInfo("Feed Message Sent by " + workerId + "********************", string.Empty, string.Empty);
+            }
             // }
         }
 
@@ -362,7 +365,7 @@ namespace Server.worker
             this.startTimer();
 
             Console.WriteLine("Tracker Stabilized " + workerId + " current tracker is " + Worker.JOBTRACKER_URL);
-            Console.WriteLine("Backup url  " + Worker.BKP_JOBTRACKER_URL);
+            //Console.WriteLine("Backup url  " + Worker.BKP_JOBTRACKER_URL, string.Empty, string.Empty);
 
         }
 

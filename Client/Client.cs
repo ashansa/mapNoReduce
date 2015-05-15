@@ -25,6 +25,7 @@ namespace PADIMapNoReduce
         String mapperName;
         DateTime startTime;
         DateTime endTime;
+        Boolean hasJobCompleted;
 
         public void initClient()
         {
@@ -39,6 +40,7 @@ namespace PADIMapNoReduce
 
         public void submitTask(String entryUrl,string inputFile, string outputDir, int splits, string mapperFunctionName,string dllPath)
         {
+            hasJobCompleted = false;
             startTime = DateTime.Now;
             this.inputFilePath = inputFile;
             this.outputDir = outputDir;
@@ -58,7 +60,7 @@ namespace PADIMapNoReduce
             String workChunk = getSplit(splitMetadata.StartPosition, splitMetadata.EndPosition);
             //string workChunk = "this is \r\n my nice little \r\n text file and \r\n it has 5 lines";
             WorkerTaskMetadata workerMetadata = new WorkerTaskMetadata(code, mapperName, workChunk);
-            Console.WriteLine(Environment.CurrentDirectory);
+            //Console.WriteLine(Environment.CurrentDirectory);
             return workerMetadata;
         }
 
@@ -73,31 +75,34 @@ namespace PADIMapNoReduce
             }
             catch (Exception ex)
             {
-                return false;//what we do if fails
+                return false;
             }
         }
 
         public void receiveJobCompletedNotification()
         {
-            //TODO: notify UI???
-            endTime = DateTime.Now;
-            var diff = endTime.Subtract(startTime);
-            String difference = String.Format("{0}h:{1}min:{2}sec", diff.Hours, diff.Minutes, diff.Seconds);
-            ClientApp clientapp = new ClientApp();
-            new Thread(delegate()
-           {
-               Application.Run(clientapp);
-           }).Start();
-            Thread.Sleep(2000);
-              ClientApp.printMsg eve = new ClientApp.printMsg(clientapp.addMessage);
+            if (!hasJobCompleted)
+            {
+                endTime = DateTime.Now;
+                hasJobCompleted = true;
+                var diff = endTime.Subtract(startTime);
+                String difference = String.Format("{0}h:{1}min:{2}sec", diff.Hours, diff.Minutes, diff.Seconds);
+                ClientApp clientapp = new ClientApp();
+                new Thread(delegate()
+               {
+                   Application.Run(clientapp);
+               }).Start();
+                Thread.Sleep(2000);
+                ClientApp.printMsg eve = new ClientApp.printMsg(clientapp.addMessage);
                 try
                 {
-                    clientapp.Invoke(eve, new Object[] { "job completed within "+difference });
+                    clientapp.Invoke(eve, new Object[] { "job completed within " + difference });
                 }
                 catch (Exception ex)
                 {
-                    
+
                 }
+            }
             }
             
 
