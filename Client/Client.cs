@@ -46,8 +46,16 @@ namespace PADIMapNoReduce
             this.outputDir = outputDir;
             this.mapperName = mapperFunctionName;
             this.dllPath = dllPath;
+
+
+           // FileInfo f = new FileInfo(inputFilePath);
+           // long s1 = f.Length;
+            //JobMetadata jobDetails = new JobMetadata(s1, splits, url);
+
             byte[] input = File.ReadAllBytes(inputFilePath);
             JobMetadata jobDetails = new JobMetadata(input.Length, splits, url);
+
+
             contactingWorker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entryUrl);
             contactingWorker.receiveJobRequest(jobDetails);//calling the job tracker
         }

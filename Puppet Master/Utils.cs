@@ -123,7 +123,7 @@ namespace Puppet_Master
                     }
                     catch (Exception ex)
                     {
-
+                        Console.WriteLine(ex.Message);
                     }
                     executeCommand(line);
                 }

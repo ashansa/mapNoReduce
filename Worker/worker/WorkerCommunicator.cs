@@ -101,6 +101,15 @@ namespace Server.worker
             }
         }
 
+        public void TrackerRevert(Dictionary<Int32, WorkerDetails> existingWorkerList)
+        {
+            foreach (KeyValuePair<Int32, WorkerDetails> entry in existingWorkerList)
+            {
+                IWorkerTracker worker = (IWorkerTracker)Activator.GetObject(typeof(IWorkerTracker), entry.Value.Nodeurl);
+                worker.TrackerRevert();
+            }
+        }
+
         public void SendTaskCopyToBackupTracker(string url, Dictionary<int, Task> taskList, string clientUrl)
         {
             IWorkerTracker bkpTracker = (IWorkerTracker)Activator.GetObject(

@@ -113,18 +113,28 @@ namespace PADIMapNoReduce
             workerTask.TrackerStabilized();
         }
 
+        public void TrackerRevert()
+        {
+            workerTask.TrackerRevert();
+        }
 
-        public void checkHeartbeat()//job tracker will invoke this
+
+        public bool checkHeartbeat(string url)//job tracker will invoke this
         {
             if (!WorkerTask.IS_WORKER_FREEZED)
             {
-                workerTask.ProcessHeartBeat();
+                if (url.Equals(JOBTRACKER_URL))
+                {
+                    workerTask.ProcessHeartBeat();
+                    return true;
+                }
             }
             else
             {
                 Console.WriteLine("I m freeze thrown exec");
                 throw new RemoteComException();
             }
+            return false;
         }
 
         public bool suspendTask(int splitId)//job tracker will invoke this after certain slowness
@@ -177,6 +187,7 @@ namespace PADIMapNoReduce
         public void updateRecoveredWorker(Dictionary<StatusType, List<int>> updatedStatus)
         {
             Console.WriteLine("fail node recovered its status");
+            workerTask.TrackerRevert();
             workerTask.updateDataStructures(updatedStatus);
         }
         #endregion
@@ -339,7 +350,6 @@ namespace PADIMapNoReduce
             Console.WriteLine("going to unfreeze " + workerId);
             Common.Logger().LogInfo("going to unfreeze " + workerId, string.Empty, string.Empty);
             WorkerTask.IS_WORKER_FREEZED = false;
-            workerTask.LatestPingTime = DateTime.Now;
             workerTask.startTimer();//to restart heartbeat
 
             /*  WorkerCommunicator communicator = new WorkerCommunicator();
@@ -352,19 +362,26 @@ namespace PADIMapNoReduce
 
         public void freezeTracker()
         {
-            trackerTask.IsTrackerFreezed = true;
-            trackerTask.stopHeatBeat();//to block communication
-            Console.WriteLine("going to freeze tracker" + workerId);
-            Common.Logger().LogInfo("going to freeze tracker" + workerId, string.Empty, string.Empty);
+            if (trackerTask != null && isJobTracker)
+            {
+                trackerTask.IsTrackerFreezed = true;
+                trackerTask.stopHeatBeat();//to block communication
+                Console.WriteLine("going to freeze tracker" + workerId);
+                Common.Logger().LogInfo("going to freeze tracker" + workerId, string.Empty, string.Empty);
+            }
 
         }
 
         public void unfreezeTracker()
         {
-            trackerTask.IsTrackerFreezed = false;
-            Common.Logger().LogInfo("Going to unfreeze tracker. But current tracker URL is " + Worker.JOBTRACKER_URL, string.Empty, string.Empty);
-            isJobTracker = false;
-        }
+            if (trackerTask != null && isJobTracker)
+            {
+                Console.WriteLine("going to unfreeze tracker" + workerId);
+                trackerTask.startHeartBeat();//restart communication, but eventually he will detect that he is no longer the jt and then will giveup
+                trackerTask.IsTrackerFreezed = false;
+                Common.Logger().LogInfo("Going to unfreeze tracker. But current tracker URL is " + Worker.JOBTRACKER_URL, string.Empty, string.Empty);
+            }
+            }
 
         public void addNewWorker(int nodeId, String newWorkerURL)
         {

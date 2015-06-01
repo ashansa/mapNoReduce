@@ -314,6 +314,8 @@ namespace Server.worker
 
         public void InitiateTrackerTransition(Boolean hasForced)
         {
+            if (!IS_WORKER_FREEZED)
+            {
             communicator.IsTrackerChanging = true;
 
             if (!hasForced )
@@ -344,8 +346,7 @@ namespace Server.worker
                 }
             }
             // Worker.JOBTRACKER_URL = Worker.BKP_JOBTRACKER_URL;
-            if (!IS_WORKER_FREEZED)
-            {
+        
                 communicator.FeedNewTracker(workerId,Worker.serviceUrl, inprogressSplits, resultSentSplits);
                 Common.Logger().LogInfo("Feed Message Sent by " + workerId + "********************", string.Empty, string.Empty);
             }
@@ -365,6 +366,23 @@ namespace Server.worker
             this.startTimer();
 
             Console.WriteLine("Tracker Stabilized " + workerId + " current tracker is " + Worker.JOBTRACKER_URL);
+            //Console.WriteLine("Backup url  " + Worker.BKP_JOBTRACKER_URL, string.Empty, string.Empty);
+
+        }
+
+        public void TrackerRevert()
+        {
+            //Worker.JOBTRACKER_URL = Worker.BKP_JOBTRACKER_URL;
+            hasTrackerChanged = false;
+            communicator.IsTrackerChanging = false;
+            communicator.CheckSystemStability();
+            //getSplitIfIdle();
+
+            latestPingTime = DateTime.Now;
+            hasHeartBeatInitiated = true;
+            this.startTimer();
+
+            Console.WriteLine("Tracker Reverted " + workerId + " current tracker is " + Worker.JOBTRACKER_URL);
             //Console.WriteLine("Backup url  " + Worker.BKP_JOBTRACKER_URL, string.Empty, string.Empty);
 
         }
